@@ -1,0 +1,16 @@
+/* Neutral reset only. New tokens (CLAUDE.md §6) come with the shell. */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+.mono {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
