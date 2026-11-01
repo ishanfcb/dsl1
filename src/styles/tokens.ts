@@ -24,7 +24,7 @@ export const scene = {
   beaconDim: "#555A62",
   /** Lane lines on the route road. */
   laneLine: "#4A4F57",
-  /** Stop lines and the middle-lane outline in the Junction close-up. */
+  /** Stop lines in the Junction close-up. */
   marking: "#FFFFFF",
   /** Signal heads only (CLAUDE.md §6: small red / amber / green dots). */
   signalRed: "#E5484D",

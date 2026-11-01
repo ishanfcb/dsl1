@@ -4,18 +4,20 @@ A web prototype that shows a design jury how our ambulance signal system works a
 
 ## 1. The concept (source of truth: the project PDF)
 
-Each traffic signal gets **one extra light: a blue signal head** that switches on only when an ambulance is approaching. Mechanism is **n+1**: the junction the ambulance is approaching AND the next one light up together, so drivers get early warning instead of a last-second siren. Paired with a **middle-lane-only rule** for ambulances and camera-enforced fines (₹10,000, MV Act §194E).
+Each traffic signal gets **one extra light: a blue signal head** that switches on only when an ambulance is approaching. Mechanism is **n+1**: the junction the ambulance is approaching AND the next one light up together, so drivers get early warning instead of a last-second siren, and both junctions turn green for the ambulance so their queues clear before it arrives. There is **no middle-lane rule** and no lane changing: all lanes keep flowing.
 
 ### Signal state machine (per junction)
 
 | Phase | J1 | J2 |
 |---|---|---|
 | Idle | NORMAL | NORMAL |
-| Ambulance within trigger radius of J1 | ALERT — blue **blinking**; ambulance's approach GREEN, all other approaches RED + blue blinking | PREWARN — blue **steady** |
+| J1 triggers (see below) | ALERT — blue **blinking**; ambulance's approach GREEN, all other approaches RED + blue blinking | PREWARN — blue **steady**; ambulance's approach GREEN, others RED (queue clears early) |
 | Ambulance passes J1 | CLEARED → resumes normal cycle | ALERT — blue blinking; ambulance approach GREEN, others RED |
 | Ambulance passes J2 | NORMAL | CLEARED → NORMAL |
 
-States: `NORMAL | PREWARN | ALERT | CLEARED`. When a junction resumes its normal cycle, it re-enters it safely (amber + all-red first, per IRC timings in data).
+States: `NORMAL | PREWARN | ALERT | CLEARED`. Every switch to green goes through amber + all-red first, and so does the return to the normal cycle (IRC timings in data). PREWARN → ALERT keeps the green; only the blue light changes.
+
+**Trigger** (tech-stack PDF): on each GPS packet, J1 computes ETA = distance ÷ speed. It triggers when ETA ≤ `global.system.triggerEta_s` (94.3 s, derived from S14), **or** when the ambulance is within `triggerDistance_m` (760 m, S14) whatever its ETA, so a stuck ambulance (speed ≈ 0) still triggers.
 
 ### System layers (for the "How it works" page)
 1. **Vehicle positioning** — GPS (NEO-M8N) + IMU (MPU9250) on ambulance, sends `{lat, lon, heading, speed, timestamp}` every 1–2 s over 4G/LoRa.
@@ -31,7 +33,7 @@ States: `NORMAL | PREWARN | ALERT | CLEARED`. When a junction resumes its normal
 - Vehicles are not uniform. Use the **Intelligent Driver Model (IDM)** for car-following. Each vehicle gets its own desired speed, sampled around the scenario speed. Vehicle types (2W, car, auto, bus) follow the scenario mix and are sized by their PCU.
 - Arrivals per arm = hourly volume ÷ `vehiclesPerSprite`. Signals run the cycle/green times given. Silk Board's BTM and HSR phases overlap (green totals exceed cycle). Model that.
 - Rain/waterlogging slows traffic via the flood-depth function `v(w) = 0.0009w² − 0.5529w + 86.9448` (w mm → km/h, impassable ≥ 300 mm), **not** a generic "rain = slower" factor.
-- Driver response to the blue light uses `perceptionReaction_s`. Siren-only drivers react only inside `sirenEffectiveRange` (≈12 m). That contrast is the whole point.
+- The system's effect comes from the signals: early greens at J1 and J2 clear the queues ahead of the ambulance. Drivers do not change lanes. `global.driver` (reaction time, siren range) is context for the story, not a simulation input.
 - If data is missing, add it to scenarios.json as `kind: "assumption"` with a note. Never bury it in code.
 
 ## 3. Scenarios (from scenarios.json)
@@ -50,13 +52,13 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
 1. **Intro**: the wordmark, one line on the problem ("Drivers hear the siren with seconds to react"), the dark city as a faint framed image, and a plain text "Start" link.
 2. **Scenarios**: a gallery row, one framed still of the city per scenario, like the photographs in `ui-editorial.jpg`. Caption below each: scenario name left, time saved right (from engine results). Beneath that, a small line with city, day/time and weather, a speed sparkline and the data badge.
 3. **Map (core)**: the corridor in 3D at the tilted overview camera.
-   - The ambulance route is a blue dotted stream. Each junction has a translucent blue trigger ring on the ground: blinking in ALERT, steady in PREWARN, off otherwise.
+   - The ambulance route is a blue dotted stream. Each junction has a translucent blue trigger ring on the ground while it is in ALERT, its radius the ambulance's distance when it triggered.
    - Junction pins carry their labels (§6). Traffic appears as amber ribbons.
    - Beside the visual, in the shell: each junction's state and the GPS packet stream as small uppercase lines.
    - Below it: a 4-frame small-multiples row, one framed frame per phase. Caption: phase name left, real time right.
    - One toggle in the shell: **Without / With system**. A city switch (Gurgaon / Bangalore) sits at the bottom right of the visual; a city is selectable once its OSM export is in `/data/osm`.
-4. **Junction**: click a pin (or use the nav) and the camera eases down to that junction. It shows the 4 arms with lane lines, a signal head on each approach (R/A/G dots plus the blue light), the middle lane outlined in white dashes, and the real queues as amber ribbons thickening and clearing.
-5. **Driver**: a camera at driver eye height behind one vehicle on the route. The blue light comes on early, amber traffic moves out of the middle lane, the ambulance passes. The siren-only version plays alongside in a second frame, same seed and time.
+4. **Junction**: click a pin (or use the nav) and the camera eases down to that junction. It shows the 4 arms with lane lines, a signal head on each approach (R/A/G dots plus the blue light), and the real queues as amber ribbons thickening and clearing.
+5. **Driver**: a camera at driver eye height behind one vehicle on the route. The blue light comes on early, the signal ahead turns green and the queue drains, the ambulance passes. The siren-only version plays alongside in a second frame, same seed and time.
 6. **System** (how it works): the 3 layers (§1) as a flat diagram in the shell style, with blue data packets moving between them.
 7. **Impact** (why it matters): a few charts built only from `global.context` and scenario results (time saved, with vs without), drawn as editorial SVG in the shell.
 
@@ -77,7 +79,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
 - Page `#050506`; panel `#131417`; text `#EDEDED`, muted `#8B9097`; faint dividers `rgba(255,255,255,0.1)`.
 - **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight, case and letter-spacing: large light uppercase page title, small medium uppercase tracked section labels, regular body, tabular figures for data. Smooth antialiased text.
 - Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
-- Left panel, top to bottom: the nav as one segmented row (Scenarios / Map / Junction / Driver / System / Impact; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
+- Left panel, top to bottom: the nav as one segmented row of the built pages (Map / Junction for now; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
 - All text and data live in the panel. The visual carries only in-scene labels (junction pins) and the OSM credit.
 - No shadows, no gradients, no emoji.
 

@@ -5,7 +5,7 @@ import data from "@data/scenarios.json";
 import { buildConfig, JUNCTIONS, type JunctionId } from "../engine";
 import { at, deref, num, obj, scenarioById } from "../engine/data";
 import { buildCorridor, osmFileFor } from "../geo/corridor";
-import { runMarks } from "../components/runMarks";
+import { runMarks, triggerDistance } from "../components/runMarks";
 import type { DataNode } from "../components/DataBadge";
 import { junctionName } from "../components/junctionText";
 import { adoptCity } from "../geo/cityCache";
@@ -61,7 +61,7 @@ function buildScenario(id: string) {
   return {
     cfg,
     runs,
-    marks: { with: runMarks(runs.withSystem), without: runMarks(runs.without) },
+    marks: { with: runMarks(runs.withSystem, triggerDistance(runs.withSystem)), without: runMarks(runs.without, triggerDistance(runs.withSystem)) },
     corridor,
     place: display.place,
     dayTime: display.dayTime,
@@ -70,7 +70,8 @@ function buildScenario(id: string) {
     ambulanceWith: at(ctx, "ambulanceWithSystem_kmh") as DataNode,
     ambulanceWithout: at(ctx, "ambulanceBaseline_noSystem_kmh") as DataNode,
     compression: at(ctx, "scaling.timeCompression") as DataNode,
-    trigger: at(ctx, "global.system.triggerDistance_m") as DataNode,
+    triggerEta: at(ctx, "global.system.triggerEta_s") as DataNode,
+    triggerDistance: at(ctx, "global.system.triggerDistance_m") as DataNode,
     cycle: Object.fromEntries(JUNCTIONS.map((j) => [j, deref(ctx, obj(ctx, `sim.signalPlan.${j}`).cycle_s)])) as Record<JunctionId, DataNode>,
     queuedBelow: at(ctx, "global.queue.queuedBelow_kmh") as DataNode,
     queuedBelowMs: num(ctx, "global.queue.queuedBelow_kmh") / 3.6,

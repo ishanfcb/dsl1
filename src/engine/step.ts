@@ -1,9 +1,9 @@
 // One fixed time step of the whole simulation. Mutates SimState; appends to RunLog.
 
 import { idmAcceleration, integrate } from "./idm";
-import { advanceClock, blue, lights, transition } from "./signals";
+import { advanceClock, lights, transition } from "./signals";
 import { collectArrivals, type SpawnPoint } from "./spawner";
-import { JUNCTIONS, type JunctionId, type JunctionState, type Light, type Role, type RunLog, type SimConfig, type SimState, type Vehicle } from "./types";
+import { JUNCTIONS, type GpsPacket, type JunctionId, type JunctionState, type Light, type Role, type RunLog, type SimConfig, type SimState, type Vehicle } from "./types";
 
 type LaneLists = Map<string, Vehicle[]>;
 /** Numerical tolerance for holding vehicles at a stop line, in metres. Not a traffic parameter. */
@@ -18,11 +18,7 @@ function buildLanes(s: SimState): LaneLists {
     if (list) list.push(v);
     else lanes.set(k, [v]);
   };
-  for (const v of s.vehicles) {
-    add(v, v.lane);
-    // A vehicle moving over blocks both lanes until it has finished.
-    if (v.targetLane !== null) add(v, v.targetLane);
-  }
+  for (const v of s.vehicles) add(v, v.lane);
   for (const list of lanes.values()) list.sort((a, b) => b.x - a.x || a.id - b.id);
   return lanes;
 }
@@ -66,7 +62,7 @@ function releaseBacklog(s: SimState, lanes: LaneLists, p: SpawnPoint): void {
 
 function tryEnterAmbulance(cfg: SimConfig, s: SimState, lanes: LaneLists, system: boolean): void {
   const a = cfg.ambulance;
-  const gap = entryGap(lanes, "route", cfg.middleLane, a.length, a.s0);
+  const gap = entryGap(lanes, "route", cfg.ambulanceLane, a.length, a.s0);
   if (gap === null) return;
   const v0 = system ? a.speedWithSystem : a.speedNoSystem;
   const amb: Vehicle = {
@@ -79,51 +75,14 @@ function tryEnterAmbulance(cfg: SimConfig, s: SimState, lanes: LaneLists, system
     length: a.length,
     s0: a.s0,
     T: a.T,
-    lane: cfg.middleLane,
-    targetLane: null,
-    changeStart: null,
-    reactAt: null,
+    lane: cfg.ambulanceLane,
     willTurn: false,
     admitted: null,
-    compliesBlue: false,
-    yieldsSiren: false,
-    prefersRight: false,
   };
-  place(s, lanes, amb, cfg.middleLane, gap);
+  place(s, lanes, amb, cfg.ambulanceLane, gap);
   s.ambulanceId = amb.id;
   s.ambulance.enteredAt = s.t;
   s.nextGpsAt = s.t;
-}
-
-/** Which junction's blue light a route vehicle at x is looking at. */
-function facingJunction(cfg: SimConfig, x: number): JunctionId | null {
-  const [j1Stop, j2Stop] = cfg.segments.route.stops;
-  if (x <= j1Stop.x) return "J1";
-  if (x <= j2Stop.x) return "J2";
-  return null;
-}
-
-function updateYielding(cfg: SimConfig, s: SimState, amb: Vehicle, system: boolean): void {
-  const { reaction, laneChange, sirenRange } = cfg.driver;
-  for (const v of s.vehicles) {
-    if (v === amb || v.segment !== "route") continue;
-    if (v.targetLane !== null && v.changeStart !== null && s.t - v.changeStart >= laneChange) {
-      v.lane = v.targetLane;
-      v.targetLane = null;
-      v.changeStart = null;
-    }
-    if (v.lane !== cfg.middleLane || v.targetLane !== null) continue;
-    if (v.reactAt === null && v.x > amb.x) {
-      const j = facingJunction(cfg, v.x);
-      const seesBlue = system && v.compliesBlue && j !== null && blue(s.controllers[j]) !== "off";
-      const hearsSiren = v.yieldsSiren && v.x - v.length - amb.x <= sirenRange;
-      if (seesBlue || hearsSiren) v.reactAt = s.t + reaction;
-    }
-    if (v.reactAt !== null && s.t >= v.reactAt) {
-      v.targetLane = cfg.middleLane + (v.prefersRight ? 1 : -1);
-      v.changeStart = s.t;
-    }
-  }
 }
 
 function accelerations(cfg: SimConfig, s: SimState, lanes: LaneLists, light: Record<JunctionId, Record<Role, Light>>): Map<number, number> {
@@ -195,23 +154,29 @@ function accrueStopBudgets(cfg: SimConfig, s: SimState, light: Record<JunctionId
   }
 }
 
-function updateStates(cfg: SimConfig, s: SimState, log: RunLog): void {
+/** The junction acts on what the packet says (tech-stack PDF step 4): ETA = distance / speed under the threshold, or the distance backup. */
+function packetTriggers(cfg: SimConfig, p: GpsPacket): boolean {
+  return p.distToJ1 <= cfg.triggerDistance || (p.speed > 0 && p.distToJ1 / p.speed <= cfg.triggerEta);
+}
+
+function updateStates(cfg: SimConfig, s: SimState, log: RunLog, packets: GpsPacket[]): void {
   const amb = s.vehicles.find((v) => v.id === s.ambulanceId);
-  const set = (j: JunctionId, to: JunctionState) => {
+  const set = (j: JunctionId, to: JunctionState, ambulanceDist?: number) => {
     const c = s.controllers[j];
     if (c.state === to) return;
-    log.events.push({ t: s.t, junction: j, from: c.state, to });
+    log.events.push({ t: s.t, junction: j, from: c.state, to, ...(ambulanceDist === undefined ? {} : { ambulanceDist }) });
     transition(cfg, cfg.junctions[j], c, to, s.t);
   };
   const c1 = s.controllers.J1;
   const c2 = s.controllers.J2;
-  if (c1.state === "NORMAL" && amb && s.ambulance.passedJ1At === null && cfg.junctions.J1.centreX - amb.x <= cfg.triggerDistance) {
-    set("J1", "ALERT");
-    set("J2", "PREWARN");
+  const trigger = c1.state === "NORMAL" && s.ambulance.passedJ1At === null ? packets.find((p) => packetTriggers(cfg, p)) : undefined;
+  if (trigger) {
+    set("J1", "ALERT", trigger.distToJ1);
+    set("J2", "PREWARN", trigger.distToJ2);
   }
   if (c1.state === "ALERT" && s.ambulance.passedJ1At !== null) {
     set("J1", "CLEARED");
-    set("J2", "ALERT");
+    set("J2", "ALERT", amb ? cfg.junctions.J2.centreX - amb.x : undefined);
   }
   if (c2.state === "ALERT" && s.ambulance.passedJ2At !== null) set("J2", "CLEARED");
   for (const j of JUNCTIONS) {
@@ -237,8 +202,6 @@ export function step(cfg: SimConfig, s: SimState, points: SpawnPoint[], system: 
   accrueStopBudgets(cfg, s, light);
 
   const amb = s.vehicles.find((v) => v.id === s.ambulanceId);
-  if (amb) updateYielding(cfg, s, amb, system);
-
   const prev = amb ? { x: amb.x, v: amb.v } : null;
   const acc = accelerations(cfg, s, buildLanes(s), light);
   for (const v of s.vehicles) {
@@ -268,16 +231,13 @@ export function step(cfg: SimConfig, s: SimState, points: SpawnPoint[], system: 
     return false;
   });
 
-  // Clocks first, so a junction that freezes this step has counted the time up to now.
-  for (const j of JUNCTIONS) advanceClock(cfg.junctions[j], s.controllers[j], cfg.dt);
-  if (system) updateStates(cfg, s, log);
-
   // GPS packets at exact interval times, interpolated within the step.
+  const packets: GpsPacket[] = [];
   const live = s.vehicles.find((v) => v.id === s.ambulanceId);
   while (live && prev && s.nextGpsAt !== null && s.nextGpsAt <= s.t + 1e-9) {
     const f = Math.min(1, Math.max(0, (s.nextGpsAt - (s.t - cfg.dt)) / cfg.dt));
     const x = prev.x + f * (live.x - prev.x);
-    log.gps.push({
+    packets.push({
       t: s.nextGpsAt,
       x,
       speed: prev.v + f * (live.v - prev.v),
@@ -287,4 +247,9 @@ export function step(cfg: SimConfig, s: SimState, points: SpawnPoint[], system: 
     });
     s.nextGpsAt += cfg.gpsInterval;
   }
+  log.gps.push(...packets);
+
+  // Clocks first, so a junction that freezes this step has counted the time up to now.
+  for (const j of JUNCTIONS) advanceClock(cfg.junctions[j], s.controllers[j], cfg.dt);
+  if (system) updateStates(cfg, s, log, packets);
 }

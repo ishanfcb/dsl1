@@ -22,7 +22,7 @@ export function Ambulance() {
     const s = stateNow(data);
     const amb = ambulanceOf(s);
     g.visible = amb !== null;
-    if (amb) toWorld(vehiclePose(amb, data.cfg, data.corridor, s.t).p, HEIGHT, g.position);
+    if (amb) toWorld(vehiclePose(amb, data.corridor).p, HEIGHT, g.position);
   });
 
   return (

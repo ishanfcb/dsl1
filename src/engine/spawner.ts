@@ -57,9 +57,6 @@ function makeVehicle(cfg: SimConfig, stream: Stream, p: SpawnPoint, id: number):
   const factor = Math.min(max, Math.max(min, stream.normal(1, sd)));
   const lane = Math.min(p.arm.lanes - 1, Math.floor(stream.uniform() * p.arm.lanes));
   const willTurn = stream.uniform() >= cfg.j1ThroughShare;
-  const compliesBlue = stream.uniform() < cfg.driver.compliance;
-  const yieldsSiren = stream.uniform() < cfg.driver.sirenYield;
-  const prefersRight = stream.uniform() < 0.5;
   const tc = cfg.types[type];
   return {
     id,
@@ -72,13 +69,7 @@ function makeVehicle(cfg: SimConfig, stream: Stream, p: SpawnPoint, id: number):
     s0: tc.s0,
     T: tc.T,
     lane,
-    targetLane: null,
-    changeStart: null,
-    reactAt: null,
     willTurn: p.segment === "route" && willTurn,
     admitted: null,
-    compliesBlue,
-    yieldsSiren,
-    prefersRight,
   };
 }

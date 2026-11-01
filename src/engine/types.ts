@@ -82,7 +82,8 @@ export interface SimConfig {
   floodCapKmh: number | null;
   ambulance: { length: number; s0: number; T: number; speedNoSystem: number; speedWithSystem: number };
   routeLanes: number;
-  middleLane: number;
+  /** The route lane the ambulance drives in (the centre one). Not a reserved lane: traffic uses it too. */
+  ambulanceLane: number;
   junctions: Record<JunctionId, JunctionConfig>;
   segments: Record<SegmentId, SegmentConfig>;
   /** Route coordinate where J1's box ends (turning vehicles leave here). */
@@ -92,15 +93,11 @@ export interface SimConfig {
   /** Stop-line capacity per lane (S11), PCU per second of green, and the most a lane can carry over. */
   stopLine: { pcuPerLaneSecond: number; carryCap: number };
   clearedDuration: number;
+  /** J1 triggers when a GPS packet's ETA (distance / speed) is at or below this... */
+  triggerEta: number;
+  /** ...or its distance to J1 is at or below this, whatever the ETA. */
   triggerDistance: number;
   gpsInterval: number;
-  driver: {
-    reaction: number;
-    laneChange: number;
-    compliance: number;
-    sirenRange: number;
-    sirenYield: number;
-  };
 }
 
 // ---------- simulation state (what views read) ----------
@@ -117,26 +114,19 @@ export interface Vehicle {
   s0: number;
   T: number;
   lane: number;
-  /** Set while moving out of the middle lane. */
-  targetLane: number | null;
-  changeStart: number | null;
-  /** Time the driver starts moving over (after perception-reaction). */
-  reactAt: number | null;
   willTurn: boolean;
   /** Junction whose stop line this vehicle has been given capacity to cross. */
   admitted: JunctionId | null;
-  compliesBlue: boolean;
-  yieldsSiren: boolean;
-  prefersRight: boolean;
 }
 
 export interface ControllerState {
   state: JunctionState;
-  /** Seconds into the cycle. Frozen while ALERT or CLEARED. */
+  /** Seconds into the cycle. Frozen from PREWARN or ALERT until NORMAL. */
   cycleClock: number;
   since: number;
-  /** Arms that were green or amber when ALERT began. */
+  /** Arms that were green or amber when the override (PREWARN or ALERT) began. */
   activeAtAlert: Role[];
+  /** When the override began: the blue light came on and the ambulance's arm started its intergreen. */
   blueOnSince: number | null;
 }
 
@@ -163,6 +153,8 @@ export interface StateEvent {
   junction: JunctionId;
   from: JunctionState;
   to: JunctionState;
+  /** Ambulance's distance to this junction along the route, on PREWARN and ALERT. */
+  ambulanceDist?: number;
 }
 
 export interface AmbulanceLog {

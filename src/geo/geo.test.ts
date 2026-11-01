@@ -26,9 +26,9 @@ describe("Gurugram corridor on OSM", () => {
     expect(Math.abs(J1[1] + J2[1])).toBeLessThan(1);
   });
 
-  test("route lanes sit on the carriageway, middle lane on its centreline", () => {
+  test("route lanes sit on the carriageway, centre lane on its centreline", () => {
     const x = cfg.junctions.J1.centreX - 200;
-    const mid = corridor.pose("route", x, cfg.middleLane).p;
+    const mid = corridor.pose("route", x, cfg.ambulanceLane).p;
     const onLine = corridor.route.project(mid);
     expect(onLine.dist).toBeLessThan(0.01);
   });

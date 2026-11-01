@@ -77,7 +77,7 @@ export function RouteStream() {
     const index: number[] = [];
     let row = 0;
     for (let x = 0; x <= endX; x += BAND_STEP, row++) {
-      const pose = corridor.pose("route", x, cfg.middleLane);
+      const pose = corridor.pose("route", x, cfg.ambulanceLane);
       for (const side of [-1, 1]) {
         const p = offsetRight(pose, (side * BAND_WIDTH) / 2);
         pos.push(p[0], 0.4, -p[1]);
@@ -120,7 +120,7 @@ export function RouteStream() {
     const size = 1 - (1 - CLOSE_SCALE) * Math.max(view.closeness.J1, view.closeness.J2);
     let n = 0;
     for (let x = from + phase + SPACING * 0.5; x < endX - 20 && n < maxDots; x += SPACING) {
-      const pose = corridor.pose("route", x, cfg.middleLane);
+      const pose = corridor.pose("route", x, cfg.ambulanceLane);
       toWorld(pose.p, DOT_HEIGHT, dummy.position);
       // Dots shrink in for the first stretch ahead of the ambulance so the stream grows out of it.
       const k = Math.min(1, (x - from) / 60);

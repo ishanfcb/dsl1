@@ -1,12 +1,12 @@
-// The trigger radius (global.system.triggerDistance_m, S14) as a thin dashed blue circle on the ground.
-// With the system on, it fades in while the ambulance is inside it and fades out once the ambulance has passed the junction.
+// Where this junction's blue light came on, as a thin dashed blue circle on the ground: its radius is the ambulance's
+// distance when the junction went to ALERT (J1: the ETA or distance trigger; J2: the ambulance passing J1).
+// It fades in for the ALERT and out once the ambulance has passed the junction. No ring in a run without ALERT.
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, BufferGeometry, DoubleSide, Float32BufferAttribute, type Mesh, type MeshBasicMaterial } from "three";
 import type { JunctionId } from "../engine";
 import { scene } from "../styles/tokens";
 import { stateNow, useSceneData } from "./SceneData";
-import { ambulanceOf } from "./vehiclePose";
 import { toWorld } from "./world";
 
 const LINE_WIDTH = 2;
@@ -47,16 +47,14 @@ function dashedCircle(r: number): BufferGeometry {
 export function TriggerRing({ junction }: { junction: JunctionId }) {
   const data = useSceneData();
   const ref = useRef<Mesh>(null);
-  const r = data.cfg.triggerDistance;
-  const geometry = useMemo(() => dashedCircle(r), [r]);
+  const r = data.sim.log.events.find((e) => e.junction === junction && e.to === "ALERT")?.ambulanceDist ?? null;
+  const geometry = useMemo(() => (r === null ? new BufferGeometry() : dashedCircle(r)), [r]);
 
   useFrame((_, delta) => {
     const s = stateNow(data);
-    const amb = ambulanceOf(s);
-    const passed = junction === "J1" ? s.ambulance.passedJ1At : s.ambulance.passedJ2At;
-    const inside = data.sim.system && amb !== null && passed === null && data.cfg.junctions[junction].centreX - amb.x <= r;
+    const on = r !== null && s.controllers[junction].state === "ALERT";
     const m = ref.current!.material as MeshBasicMaterial;
-    const target = inside ? OPACITY : 0;
+    const target = on ? OPACITY : 0;
     m.opacity = data.reducedMotion ? target : m.opacity + (target - m.opacity) * (1 - Math.exp(-delta * FADE));
     ref.current!.visible = m.opacity > 0.005;
   });

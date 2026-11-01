@@ -85,7 +85,7 @@ export function CameraRig() {
     const x = amb ? amb.x : s.ambulance.exitedAt !== null ? cfg.segments.route.endX : 0;
     const next = JUNCTIONS.map((j) => cfg.junctions[j].centreX).find((c) => c > x) ?? cfg.segments.route.endX;
     const ahead = Math.min(LOOK_AHEAD_MAX, Math.max(LOOK_AHEAD_MIN, (next - x) / 2));
-    toWorld(corridor.pose("route", Math.min(x + ahead, cfg.segments.route.endX), cfg.middleLane).p, 0, tmp);
+    toWorld(corridor.pose("route", Math.min(x + ahead, cfg.segments.route.endX), cfg.ambulanceLane).p, 0, tmp);
     if (!follow.current || data.reducedMotion) follow.current = tmp.clone();
     else follow.current.lerp(tmp, 1 - Math.exp(-delta * FOLLOW));
 

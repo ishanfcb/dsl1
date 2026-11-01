@@ -76,7 +76,6 @@ export function buildConfig(root: unknown, scenarioId: string): SimConfig {
   const mainWidth = (j: JunctionId) => (lanes(j, "in") + lanes(j, "out")) * laneWidth;
 
   const routeLanes = lanes("J1", "in");
-  if (routeLanes % 2 !== 1) throw new Error(`${scenarioId}: route lane count must be odd for a middle lane (got ${routeLanes})`);
   if (lanes("J2", "in") !== routeLanes || lanes("J2", "out") !== routeLanes) {
     throw new Error(`${scenarioId}: J1.in, J2.in and J2.out must have the same lane count`);
   }
@@ -162,11 +161,11 @@ export function buildConfig(root: unknown, scenarioId: string): SimConfig {
   armSegment("J2", "left", crossLen, mainWidth("J2"));
   armSegment("J2", "right", crossLen, mainWidth("J2"));
 
-  const middleLane = Math.floor(routeLanes / 2);
+  const ambulanceLane = Math.floor(routeLanes / 2);
   const clearedDuration = num(ctx, "global.system.clearedDuration_s");
   if (clearedDuration !== amber + allRed) throw new Error("global.system.clearedDuration_s must equal amber + all-red");
   if (geo.ambulanceEntry && (geo.ambulanceEntry as { lane?: string }).lane !== "middle") {
-    throw new Error(`${scenarioId}: only a middle-lane ambulance entry is supported`);
+    throw new Error(`${scenarioId}: only a centre-lane ambulance entry is supported`);
   }
 
   return {
@@ -196,7 +195,7 @@ export function buildConfig(root: unknown, scenarioId: string): SimConfig {
       speedWithSystem: capped("sim.ambulanceSpeed_withSystem_kmh"),
     },
     routeLanes,
-    middleLane,
+    ambulanceLane,
     junctions,
     segments,
     j1FarEdge: x1 + b1 / 2,
@@ -207,14 +206,8 @@ export function buildConfig(root: unknown, scenarioId: string): SimConfig {
       carryCap: Math.max(...VEHICLE_TYPES.map((t) => types[t].spritePcu)),
     },
     clearedDuration,
+    triggerEta: num(ctx, "global.system.triggerEta_s"),
     triggerDistance: num(ctx, "global.system.triggerDistance_m"),
     gpsInterval: num(ctx, "global.system.gpsInterval_s"),
-    driver: {
-      reaction: num(ctx, "global.driver.withSystem.reaction_s"),
-      laneChange: num(ctx, "global.driver.withSystem.laneChange_s"),
-      compliance: num(ctx, "global.driver.withSystem.compliance"),
-      sirenRange: num(ctx, "global.driver.sirenOnly.range_m"),
-      sirenYield: num(ctx, "global.driver.sirenOnly.yieldShare"),
-    },
   };
 }

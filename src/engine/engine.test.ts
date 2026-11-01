@@ -45,6 +45,10 @@ describe("config from scenarios.json", () => {
     }
   });
 
+  test("trigger ETA is 760 m (S14) at the 29 km/h baseline speed (S1)", () => {
+    expect(cfgs.baseline.triggerEta).toBeCloseTo(760 / (29 / 3.6), 1);
+  });
+
   test("baseline uses 25% of the S5 counts", () => {
     expect(cfgs.baseline.junctions.J1.arms.left.volumeVehPerHr).toBeCloseTo(8300 * 0.25, 6);
   });
@@ -85,14 +89,32 @@ describe("junction state machine (n+1)", () => {
     }
   });
 
-  test("J1 alerts once the ambulance is within the trigger distance", () => {
-    const cfg = rainWith.cfg;
-    const alert = rainWith.log.events.find((e) => e.to === "ALERT")!;
-    const s = rainWith.at(alert.t);
-    const amb = s.vehicles.find((v) => v.id === s.ambulanceId)!;
-    const dist = cfg.junctions.J1.centreX - amb.x;
-    expect(dist).toBeLessThanOrEqual(cfg.triggerDistance);
-    expect(dist).toBeGreaterThan(cfg.triggerDistance - amb.v * cfg.dt - 1e-6);
+  test("J1 alerts on the first GPS packet with ETA under the threshold or distance under the backup", () => {
+    for (const sim of [rainWith, gurWith]) {
+      const cfg = sim.cfg;
+      const fires = (p: (typeof sim.log.gps)[number]) =>
+        p.distToJ1 <= cfg.triggerDistance || (p.speed > 0 && p.distToJ1 / p.speed <= cfg.triggerEta);
+      const alert = sim.log.events.find((e) => e.junction === "J1" && e.to === "ALERT")!;
+      const first = sim.log.gps.findIndex(fires);
+      expect(first).toBeGreaterThan(0);
+      expect(alert.ambulanceDist).toBeCloseTo(sim.log.gps[first].distToJ1, 9);
+      expect(alert.t - sim.log.gps[first].t).toBeLessThan(cfg.dt + 1e-9);
+    }
+  });
+
+  test("PREWARN: J2 turns green for the ambulance with a steady blue light, and stays green into ALERT", () => {
+    for (const sim of [rainWith, gurWith]) {
+      const cfg = sim.cfg;
+      const prewarn = sim.log.events.find((e) => e.junction === "J2" && e.to === "PREWARN")!;
+      const s = sim.at(prewarn.t + cfg.signal.amber + cfg.signal.allRed);
+      expect(s.controllers.J2.state).toBe("PREWARN");
+      expect(lights(cfg, cfg.junctions.J2, s.controllers.J2, s.t)).toEqual({ in: "GREEN", out: "RED", left: "RED", right: "RED" });
+      expect(blue(s.controllers.J2)).toBe("steady");
+      const alert = sim.log.events.find((e) => e.junction === "J2" && e.to === "ALERT")!;
+      const a = sim.at(alert.t + 1);
+      expect(lights(cfg, cfg.junctions.J2, a.controllers.J2, a.t).in).toBe("GREEN");
+      expect(blue(a.controllers.J2)).toBe("blinking");
+    }
   });
 
   test("ALERT: ambulance arm green within one intergreen, all others red; CLEARED: amber then red", () => {
@@ -112,11 +134,13 @@ describe("junction state machine (n+1)", () => {
   });
 
   test("after CLEARED the cycle resumes where it was interrupted", () => {
-    const alert = rainWith.log.events.find((e) => e.junction === "J1" && e.to === "ALERT")!;
-    const normal = rainWith.log.events.find((e) => e.junction === "J1" && e.to === "NORMAL")!;
-    const before = rainWith.at(alert.t).controllers.J1.cycleClock;
-    const after = rainWith.at(normal.t).controllers.J1.cycleClock;
-    expect(after).toBeCloseTo(before, 6);
+    for (const j of ["J1", "J2"] as const) {
+      const start = rainWith.log.events.find((e) => e.junction === j && (e.to === "ALERT" || e.to === "PREWARN"))!;
+      const normal = rainWith.log.events.find((e) => e.junction === j && e.to === "NORMAL")!;
+      const before = rainWith.at(start.t).controllers[j].cycleClock;
+      const after = rainWith.at(normal.t).controllers[j].cycleClock;
+      expect(after).toBeCloseTo(before, 6);
+    }
   });
 
   test("without the system nothing changes state and the blue light stays off", () => {

@@ -102,22 +102,15 @@
       "sirenEffectiveRange_urbanIntersection_m": { "value": 12, "src": "S13", "kind": "sourced", "note": "<= 40 ft (1977 US DOT study cited in S13)" },
       "sirenEffectiveRange_closedCar_m": { "value": 24, "src": "S13", "kind": "sourced", "note": "<= 80 ft, author's estimate" },
       "sirenLocalisedCorrectly_windowsClosed": { "value": 0.26, "src": "S13", "kind": "sourced" },
-      "withSystem": {
-        "reaction_s":    { "ref": "global.driver.perceptionReaction_s" },
-        "laneChange_s":  { "value": 3, "unit": "s", "kind": "assumption", "note": "Time to move out of the middle lane once reacting." },
-        "compliance":    { "value": 0.9, "kind": "assumption", "note": "Share of middle-lane drivers who move over when they see the blue light." }
-      },
-      "sirenOnly": {
-        "reaction_s":    { "ref": "global.driver.perceptionReaction_s" },
-        "range_m":       { "ref": "global.driver.sirenEffectiveRange_urbanIntersection_m" },
-        "laneChange_s":  { "ref": "global.driver.withSystem.laneChange_s" },
-        "yieldShare":    { "value": 0.38, "src": "S17", "kind": "derived", "note": "1 - 0.62 (ambulance drivers who say motorists don't yield). Applies only inside the siren range. The siren still sounds when the system is on." }
-      }
+      "motoristsDontYield": { "value": 0.62, "src": "S17", "kind": "sourced", "note": "Share of ambulance drivers who say motorists don't yield." },
+      "_note": "Context only. The simulation has no lane changes and no middle-lane rule: all lanes keep flowing, and the system clears the road by turning both junctions green early. These figures explain why a siren alone gives too little warning."
     },
     "system": {
-      "triggerDistance_m": { "value": 760, "src": "S14", "kind": "proxy", "note": "distance at which the Bengaluru pilot device turns the signal green. Use it as the J1 blink radius." },
-      "n1PrewarnDistance_m": { "value": "triggerDistance + distance(J1, J2)", "kind": "assumption", "note": "J2 goes steady blue at the same moment J1 starts blinking (n+1 rule from the concept PDF)" },
-      "gpsInterval_s": { "value": 1.5, "unit": "s", "kind": "assumption", "note": "Concept: the ambulance unit sends a packet every 1–2 s. Midpoint." },
+      "triggerEta_s": { "value": 94.3, "unit": "s", "src": "S14", "kind": "derived", "note": "760 m (S14) / 29 km/h (baseline night speed, S1) = 94.3 s: the warning the Bengaluru pilot gives at free-flow speed. J1 triggers when the ETA in a GPS packet (distance / speed) drops to this or below. Distance is measured along the route." },
+      "triggerDistance_m": { "value": 760, "src": "S14", "kind": "proxy", "note": "Backup trigger: J1 also triggers once the ambulance is this close, whatever its ETA. Covers an ambulance crawling or stopped in a queue, whose ETA would otherwise never drop. Distance at which the Bengaluru pilot device turns the signal green." },
+      "triggerRule": { "value": "ETA <= triggerEta_s OR distance <= triggerDistance_m, checked on each GPS packet", "kind": "assumption", "note": "The tech-stack PDF triggers on ETA below a threshold; the distance backup is ours." },
+      "n1Prewarn": { "value": "J2 goes PREWARN at the same moment J1 goes ALERT", "kind": "assumption", "note": "n+1 rule from the concept PDF. In PREWARN, J2 turns green for the ambulance's approach (same intergreen as ALERT) with its blue light steady, so its queue clears before the ambulance arrives. It blinks (ALERT) once the ambulance passes J1." },
+      "gpsInterval_s": { "value": 1.5, "unit": "s", "kind": "assumption", "note": "Concept: the ambulance unit sends a packet every 1–2 s. Midpoint. (The tech-stack PDF says every 1 s.)" },
       "clearedDuration_s": { "value": 5, "unit": "s", "kind": "derived", "note": "amber 3 + all-red 2 (signalTiming_chosen). Then the junction returns to the phase that was interrupted, with its remaining green." },
       "passedRule": { "value": "rear of ambulance crosses the far edge of the junction box", "kind": "assumption", "note": "Box depth along the route = width of the cross road (left + right lanes x lane width)." },
       "alertEntryRule": { "value": "conflicting greens go amber then all-red before the ambulance's arm turns green", "kind": "assumption", "note": "Same intergreen as everywhere else (5 s). If the ambulance's arm is already green, it stays green. Not stated in the concept; added for safety." }
@@ -207,7 +200,7 @@
       },
       "vehicleMix": { "value": "use bengaluru mix with car share +10 pts", "kind": "assumption", "note": "no Gurugram on-road data found. Superseded by global.vehicleMix_onRoad.gurugram (sim.vehicleMix)." },
       "ambulanceBaseline_noSystem_kmh": { "value": 18.9, "kind": "derived", "note": "stuck at traffic speed" },
-      "ambulanceWithSystem_kmh": { "value": 35, "kind": "assumption", "note": "cleared middle lane on an urban arterial. A signal-free green corridor, IGI→Medanta, covered 12 km in 6 min (S4), so 35 is conservative." },
+      "ambulanceWithSystem_kmh": { "value": 35, "kind": "assumption", "note": "Desired speed with both junctions green ahead. It is still held to the speed of traffic ahead in its lane. A signal-free green corridor, IGI→Medanta, covered 12 km in 6 min (S4), so 35 is conservative." },
       "geometry": {
         "_readme": "Same conventions as scenarios.bengaluru-heavy-rain.geometry.",
         "j1ToJ2_m": { "value": 514, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (513.5 m), replacing the 3000 m placeholder. Real map distance, but on the stand-in corridor (see geometry.osm.coverage), not Rajiv Chowk -> Subhash Chowk." },
@@ -240,14 +233,14 @@
           }
         },
         "approachLengthOnScreen_m": {
-          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed global.system.triggerDistance_m (760)." },
+          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach: 760 m (S14), or 94.3 s of ETA at the fastest ambulance speed (35 km/h = 917 m)." },
           "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Medanta (destination) is not drawn; the run ends here." },
           "crossArms":      { "value": 300,  "unit": "m", "kind": "assumption", "note": "Left/right arms at both junctions." }
         },
         "ambulanceEntry": {
           "arm": "J1.in",
           "lane": "middle",
-          "distanceBeforeJ1_m": { "value": 1000, "unit": "m", "kind": "assumption", "note": "240 m of NORMAL before the 760 m trigger (S14)." }
+          "distanceBeforeJ1_m": { "value": 1000, "unit": "m", "kind": "assumption", "note": "NORMAL until the ETA or 760 m trigger (S14)." }
         },
         "ambulanceMovement": {
           "atJ1": { "value": "turn", "kind": "assumption", "note": "The route NH-48 -> Sohna Road implies a turn at Rajiv Chowk. Turn direction not verified. If Rajiv Chowk is grade-separated (see junctions.J1), this at-grade J1 may not exist." },
@@ -340,14 +333,14 @@
           }
         },
         "approachLengthOnScreen_m": {
-          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed global.system.triggerDistance_m (760) so every run opens in NORMAL before J1 alerts." },
+          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach (760 m, or 94.3 s of ETA at the ambulance's speed) so every run opens in NORMAL before J1 alerts." },
           "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Enough to see the ambulance clear J2 and J2 return to NORMAL." },
           "crossArms":      { "value": 300,  "unit": "m", "kind": "assumption", "note": "Applies to left/right arms at both junctions. BTM red-phase queues may exceed this; the engine needs an off-screen queue store." }
         },
         "ambulanceEntry": {
           "arm": "J1.in",
           "lane": "middle",
-          "distanceBeforeJ1_m": { "value": 1000, "unit": "m", "kind": "assumption", "note": "Start of the drawn upstream approach: 240 m of NORMAL before the 760 m trigger (S14). Middle lane = index floor(lanes/2), so lane counts on the route must be odd." }
+          "distanceBeforeJ1_m": { "value": 1000, "unit": "m", "kind": "assumption", "note": "Start of the drawn upstream approach: NORMAL until the ETA or 760 m trigger (S14). The ambulance drives in the centre lane, index floor(lanes/2); there is no middle-lane rule." }
         },
         "ambulanceMovement": {
           "atJ1": { "value": "straight", "kind": "assumption", "note": "Hosur_S -> Hosur_N, read from the title 'Silk Board -> Hosur Road' towards Madiwala. Verify the direction of travel." },

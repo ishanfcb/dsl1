@@ -117,7 +117,7 @@ export function TrafficRibbons() {
       for (let i = 0; i < list.length && n < MAX; i++) {
         const v = list[i];
         const d = densityOf(v, list[i - 1]);
-        const pose = vehiclePose(v, data.cfg, data.corridor, s.t);
+        const pose = vehiclePose(v, data.corridor);
         toWorld(pose.p, HEIGHT, dummy.position);
         dummy.rotation.set(0, headingY(pose.dir), 0);
         dummy.scale.set(v.length + width, 1, width);

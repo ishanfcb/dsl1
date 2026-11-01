@@ -1,5 +1,5 @@
 // Road markings for the Junction close-up: lane lines on the other three approaches (the route's own lanes
-// are RouteLanes), a stop line on all four, and the route's middle lane outlined in white dashes.
+// are RouteLanes) and a stop line on all four.
 // They fade in as the camera comes down to this junction, so the Map overview stays as it was.
 import { useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -10,7 +10,7 @@ import { useSceneData } from "./SceneData";
 import { useSceneView } from "./View";
 
 const HEIGHT = 0.32;
-/** Same dash pattern as RouteLanes, so the white middle-lane dashes sit on its grey ones. */
+/** Same dash pattern as RouteLanes. */
 const DASH = 6;
 const GAP = 9;
 const STEP = 4;
@@ -20,12 +20,10 @@ export function JunctionMarkings({ junction }: { junction: JunctionId }) {
   const view = useSceneView();
   const { cfg, corridor } = data;
 
-  const { lanes, stops, middle } = useMemo(() => {
-    const j = cfg.junctions[junction];
+  const { lanes, stops } = useMemo(() => {
     const reach = cfg.segments[`${junction}.left`].stops[0].x; // drawn cross-arm length
     const lanes: number[] = [];
     const stops: number[] = [];
-    const middle: number[] = [];
     const line = (out: number[], segment: SegmentId, x0: number, l0: number, x1: number, l1: number) => {
       const a = corridor.pose(segment, x0, l0).p;
       const b = corridor.pose(segment, x1, l1).p;
@@ -50,27 +48,19 @@ export function JunctionMarkings({ junction }: { junction: JunctionId }) {
       }
     }
 
-    // The route's middle lane either side of the box.
-    const routeStop = cfg.segments.route.stops.find((s) => s.junction === junction)!.x;
-    const farEdge = j.centreX + j.boxDepth / 2;
-    for (const [from, to] of [[Math.max(0, routeStop - reach), routeStop], [farEdge, Math.min(cfg.segments.route.endX, farEdge + reach)]]) {
-      for (const side of [-0.5, 0.5]) dashed(middle, "route", from, to, cfg.middleLane + side, DASH, DASH + GAP);
-    }
-
     const geometry = (pos: number[]) => {
       const g = new BufferGeometry();
       g.setAttribute("position", new Float32BufferAttribute(pos, 3));
       return g;
     };
-    return { lanes: geometry(lanes), stops: geometry(stops), middle: geometry(middle) };
+    return { lanes: geometry(lanes), stops: geometry(stops) };
   }, [cfg, corridor, junction]);
-  useEffect(() => () => { lanes.dispose(); stops.dispose(); middle.dispose(); }, [lanes, stops, middle]);
+  useEffect(() => () => { lanes.dispose(); stops.dispose(); }, [lanes, stops]);
 
   const materials = useMemo(
     () => ({
       lanes: new LineBasicMaterial({ color: scene.laneLine, transparent: true, opacity: 0 }),
       stops: new LineBasicMaterial({ color: scene.marking, transparent: true, opacity: 0 }),
-      middle: new LineBasicMaterial({ color: scene.marking, transparent: true, opacity: 0 }),
     }),
     [],
   );
@@ -79,14 +69,12 @@ export function JunctionMarkings({ junction }: { junction: JunctionId }) {
     const c = view.closeness[junction];
     materials.lanes.opacity = 0.7 * c;
     materials.stops.opacity = 0.8 * c;
-    materials.middle.opacity = 0.85 * c;
   });
 
   return (
     <group>
       <lineSegments geometry={lanes} material={materials.lanes} />
       <lineSegments geometry={stops} material={materials.stops} />
-      <lineSegments geometry={middle} material={materials.middle} renderOrder={1} />
     </group>
   );
 }

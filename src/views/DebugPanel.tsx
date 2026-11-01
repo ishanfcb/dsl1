@@ -66,8 +66,8 @@ export function DebugPanel() {
         })}
         {s.vehicles.filter((v) => v.segment === "route").map((v) => (
           <rect key={v.id} x={sx(v.x - v.length)} width={Math.max(1, sx(v.length))}
-            y={(v.targetLane ?? v.lane) * laneH + 1} height={laneH - 2}
-            fill={v.type === "ambulance" ? "red" : v.targetLane !== null ? "orange" : "#333"} />
+            y={v.lane * laneH + 1} height={laneH - 2}
+            fill={v.type === "ambulance" ? "red" : "#333"} />
         ))}
         <text x={2} y={cfg.routeLanes * laneH + 14} fontSize={10}>route (J1.in → J1 → link → J2 → J2.out), {Math.round(routeEnd)} m</text>
       </svg>
