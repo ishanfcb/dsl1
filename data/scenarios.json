@@ -115,6 +115,10 @@
       "passedRule": { "value": "rear of ambulance crosses the far edge of the junction box", "kind": "assumption", "note": "Box depth along the route = width of the cross road (left + right lanes x lane width)." },
       "alertEntryRule": { "value": "conflicting greens go amber then all-red before the ambulance's arm turns green", "kind": "assumption", "note": "Same intergreen as everywhere else (5 s). If the ambulance's arm is already green, it stays green. Not stated in the concept; added for safety." }
     },
+    "carriagewayDrawing": {
+      "_note": "Drawing only; the engine keeps its lanes and volumes. Each main-road carriageway (the route and the opposite carriageway) is drawn no wider than OSM maps it, its lanes tag x geometry.laneWidth_m, and never closer than medianClearance_m to the other carriageway. Where the scenario has more lanes than that (Bengaluru: 5 effective lanes on a 2-lane OSM carriageway), the lanes are drawn closer together inside it and the vehicles narrower, so the two directions never overlap.",
+      "medianClearance_m": { "value": 1, "unit": "m", "kind": "assumption", "note": "Clear space kept between the two carriageways' drawn edges." }
+    },
     "crossArmDrawing": {
       "_note": "Drawing only; the engine keeps its lanes and volumes. A cross arm follows its OSM road (geometry.osm.crossArms), and its inbound lanes are drawn no wider than this from the road's centreline, by OSM highway class, so traffic stays on the street instead of in the buildings beside it. Where the scenario has more lanes than fit, they are drawn closer together: a busy arm on a narrow street reads as a packed street.",
       "maxHalfWidth_m": {

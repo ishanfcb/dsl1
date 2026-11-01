@@ -25,8 +25,10 @@ export interface Corridor {
   junctionXY: Record<JunctionId, XY>;
   /** J1 → J2 centre distance measured along the OSM route. */
   measuredJ1ToJ2: number;
-  /** geometry.laneWidth_m: how far apart lanes are drawn. */
+  /** geometry.laneWidth_m: the widest lanes are drawn. */
   laneWidth: number;
+  /** How far apart a segment's lanes are drawn: laneWidth, or less where the mapped road is narrower. */
+  laneSpacing(segment: SegmentId): number;
   footprints: Footprint[];
   roads: MapRoad[];
   /** Engine route coordinate → arc length on `route`. */
@@ -114,7 +116,23 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
   ) as Record<JunctionId, number>;
 
   const laneWidth = num(ctx, "geometry.laneWidth_m");
-  const across = (lane: number, lanes: number) => (lane - (lanes - 1) / 2) * laneWidth;
+  const across = (lane: number, lanes: number, spacing = laneWidth) => (lane - (lanes - 1) / 2) * spacing;
+
+  // Drawing only (global.carriagewayDrawing): each main-road carriageway is drawn no wider than OSM maps it
+  // (its lanes tag x laneWidth) and never closer than medianClearance_m to the other carriageway, with the
+  // engine's lanes squeezed to fit inside. Where the scenario has more lanes than the street, they sit closer.
+  const clearance = num(ctx, "global.carriagewayDrawing.medianClearance_m");
+  const mappedWidth = (ids: string[], lanes: number) => {
+    const tagged = Math.min(...ids.map((id) => Number(osm.way(id).tags.lanes) || Infinity));
+    return Number.isFinite(tagged) ? tagged * laneWidth : lanes * laneWidth;
+  };
+  let gap = Infinity; // centre-to-centre distance between the carriageways, at its narrowest along the route
+  for (let x = 0; x <= cfg.segments.route.endX; x += 10) gap = Math.min(gap, opposing.project(route.at(routeS(x)).p).dist);
+  const fit = (ids: string[], lanes: number) => Math.min(laneWidth, Math.min(mappedWidth(ids, lanes), gap - clearance) / lanes);
+  const routeSpacing = fit(ways(ctx, `${o}.routeWay`), cfg.segments.route.lanes);
+  const outSpacing = Object.fromEntries(
+    JUNCTIONS.map((j) => [j, fit(ways(ctx, `${o}.opposingWay`), cfg.segments[`${j}.out`].lanes)]),
+  ) as Record<JunctionId, number>;
 
   // Cross arms on the real cross roads (geometry.osm.crossArms), from the junction centre outward.
   const traffic = osm.roads.filter((r) => !NOT_TRAFFIC.has(String(r.tags.highway)));
@@ -133,18 +151,26 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
     }
   }
 
+  const laneSpacing = (segment: SegmentId): number => {
+    if (segment === "route") return routeSpacing;
+    const [jid, role] = segment.split(".") as [JunctionId, "out" | "left" | "right"];
+    if (role === "out") return outSpacing[jid];
+    const arm = armLines[`${jid}.${role}`];
+    return arm ? Math.min(laneWidth, halfWidthFor(arm.highway) / cfg.segments[segment].lanes) : laneWidth;
+  };
+
   const pose = (segment: SegmentId, x: number, lane: number): Pose => {
     const seg = cfg.segments[segment];
     if (segment === "route") {
       const base = route.at(routeS(x));
-      return { p: offsetRight(base, across(lane, seg.lanes)), dir: base.dir };
+      return { p: offsetRight(base, across(lane, seg.lanes, routeSpacing)), dir: base.dir };
     }
     const [jid, role] = segment.split(".") as [JunctionId, "out" | "left" | "right"];
     const j = cfg.junctions[jid];
     const stopX = seg.stops[0].x;
     if (role === "out") {
       const base = opposing.at(opposingS[jid] - j.boxDepth / 2 - stopX + x);
-      return { p: offsetRight(base, across(lane, seg.lanes)), dir: base.dir };
+      return { p: offsetRight(base, across(lane, seg.lanes, outSpacing[jid])), dir: base.dir };
     }
     // Cross arms, keeping left (geometry.osm.crossArms). u = distance out from the junction centre; inside the
     // box (u < 0) the line carries on straight across.
@@ -153,7 +179,7 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
     if (arm) {
       const out = arm.line.at(stopX + halfCrossing - x);
       const base: Pose = { p: out.p, dir: [-out.dir[0], -out.dir[1]] };
-      const spacing = Math.min(laneWidth, halfWidthFor(arm.highway) / seg.lanes);
+      const spacing = laneSpacing(segment);
       return { p: offsetRight(base, -spacing * seg.lanes + spacing * (lane + 0.5)), dir: base.dir };
     }
     // No mapped road on this side: straight, at right angles to the route.
@@ -177,7 +203,7 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
   }));
   const roads = osm.roads.map((r) => ({ id: r.id, highway: String(r.tags.highway), pts: r.pts.map(project) }));
 
-  return { project, route, opposing, junctionS, junctionXY, measuredJ1ToJ2, laneWidth, footprints, roads, routeS, pose };
+  return { project, route, opposing, junctionS, junctionXY, measuredJ1ToJ2, laneWidth, laneSpacing, footprints, roads, routeS, pose };
 }
 
 /** Which /data/osm file a scenario uses. */

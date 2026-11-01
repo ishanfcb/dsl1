@@ -42,25 +42,30 @@ const GLOW_JAM = 3;
 const vertex = /* glsl */ `
   attribute float aGlow;
   attribute float aLength;
+  attribute float aWidth;
   varying vec2 vUv;
   varying float vGlow;
   varying float vLength;
+  varying float vWidth;
   void main() {
     vUv = uv;
     vGlow = aGlow;
     vLength = aLength;
+    vWidth = aWidth;
     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
   }
 `;
 // Quad = capsule plus a lane-width margin of halo; distances in metres.
 const fragment = /* glsl */ `
   uniform vec3 uColor;
-  uniform float uWidth;
-  uniform float uRadius;
+  uniform float uBody;
   varying vec2 vUv;
   varying float vGlow;
   varying float vLength;
+  varying float vWidth;
   void main() {
+    float uWidth = vWidth;
+    float uRadius = vWidth * uBody * 0.5;
     float along = (vUv.x - 0.5) * (vLength + uWidth);
     float across = (vUv.y - 0.5) * uWidth;
     float halfLen = max(0.0, vLength * 0.5 - uRadius);
@@ -91,31 +96,27 @@ export function TrafficRibbons() {
   const ref = useRef<InstancedMesh>(null);
   const { camera } = useThree();
   const dummy = useMemo(() => new Object3D(), []);
-  const slotW = data.corridor.laneWidth / ABREAST;
-  const { geometry, material, glow, len } = useMemo(() => {
+  const { geometry, material, glow, len, wid } = useMemo(() => {
     const geometry = new PlaneGeometry(1, 1);
     geometry.rotateX(-Math.PI / 2); // lie flat; local +x = along the lane
     const glow = new InstancedBufferAttribute(new Float32Array(MAX), 1);
     const len = new InstancedBufferAttribute(new Float32Array(MAX), 1);
-    glow.setUsage(DynamicDrawUsage);
-    len.setUsage(DynamicDrawUsage);
+    const wid = new InstancedBufferAttribute(new Float32Array(MAX), 1);
+    for (const a of [glow, len, wid]) a.setUsage(DynamicDrawUsage);
     geometry.setAttribute("aGlow", glow);
     geometry.setAttribute("aLength", len);
+    geometry.setAttribute("aWidth", wid);
     const material = new ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
-      uniforms: {
-        uColor: { value: new Color(scene.amber) },
-        uWidth: { value: slotW },
-        uRadius: { value: (slotW * BODY_SHARE) / 2 },
-      },
+      uniforms: { uColor: { value: new Color(scene.amber) }, uBody: { value: BODY_SHARE } },
       transparent: true,
       depthWrite: false,
       blending: AdditiveBlending,
       toneMapped: false,
     });
-    return { geometry, material, glow, len };
-  }, [slotW]);
+    return { geometry, material, glow, len, wid };
+  }, []);
 
   useFrame(() => {
     const mesh = ref.current;
@@ -131,13 +132,17 @@ export function TrafficRibbons() {
       else lanes.set(k, [v]);
     }
     const grow = Math.max(1, camera.position.y / TRUE_SIZE_BELOW);
-    const w = slotW * grow;
-    material.uniforms.uWidth.value = w;
-    material.uniforms.uRadius.value = (w * BODY_SHARE) / 2;
+    // Each vehicle's slot across its lane, from how far apart that road's lanes are drawn.
+    const slotOf = new Map<string, number>();
+    const slotWidth = (segment: Vehicle["segment"]) => {
+      let w = slotOf.get(segment);
+      if (w === undefined) slotOf.set(segment, (w = (data.corridor.laneSpacing(segment) / ABREAST) * grow));
+      return w;
+    };
     const perSprite = data.cfg.vehiclesPerSprite;
     const rows = Math.ceil(perSprite / ABREAST);
     let n = 0;
-    const put = (c: Corridor, v: Vehicle, x: number, lane: number, length: number, g: number) => {
+    const put = (c: Corridor, v: Vehicle, x: number, lane: number, length: number, g: number, w: number) => {
       const pose = c.pose(v.segment, x, lane);
       toWorld(pose.p, HEIGHT, dummy.position);
       dummy.rotation.set(0, headingY(pose.dir), 0);
@@ -146,6 +151,7 @@ export function TrafficRibbons() {
       mesh.setMatrixAt(n, dummy.matrix);
       glow.setX(n, g);
       len.setX(n, length);
+      wid.setX(n, w);
       n++;
     };
     for (const list of lanes.values()) {
@@ -154,13 +160,14 @@ export function TrafficRibbons() {
         const v = list[i];
         const g = GLOW_FREE + (GLOW_JAM - GLOW_FREE) * densityOf(v, list[i - 1]);
         const slot = v.length / rows;
+        const w = slotWidth(v.segment);
         for (let k = 0; k < perSprite && n < MAX; k++) {
           const row = Math.floor(k / ABREAST);
           const inRow = Math.min(ABREAST, perSprite - row * ABREAST);
           const col = (k % ABREAST) - (inRow - 1) / 2;
           const x = v.x - slot * (row + 0.5 + (hash(v.id, k) - 0.5) * JITTER);
           const lane = v.lane + (col + (hash(v.id, k + 97) - 0.5) * JITTER) / ABREAST;
-          put(data.corridor, v, x, lane, Math.max(slot * LENGTH_SHARE, w * BODY_SHARE), g);
+          put(data.corridor, v, x, lane, Math.max(slot * LENGTH_SHARE, w * BODY_SHARE), g, w);
         }
       }
     }
@@ -168,6 +175,7 @@ export function TrafficRibbons() {
     mesh.instanceMatrix.needsUpdate = true;
     glow.needsUpdate = true;
     len.needsUpdate = true;
+    wid.needsUpdate = true;
   });
 
   return <instancedMesh ref={ref} args={[geometry, material, MAX]} frustumCulled={false} renderOrder={2} />;

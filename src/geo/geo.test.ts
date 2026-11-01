@@ -66,3 +66,19 @@ describe.each(["gurugram-monday-peak", "bengaluru-heavy-rain"])("cross arms on t
     expect(blocked.length / samples.length).toBeLessThan(0.02);
   });
 });
+
+describe.each(["gurugram-monday-peak", "bengaluru-heavy-rain"])("the two directions of the main road never overlap: %s", (sid) => {
+  const c = buildConfig(data, sid);
+  const osm = readFileSync(new URL(`../../data/osm/${osmFileFor(data, sid)}`, import.meta.url), "utf8");
+  const corr = buildCorridor(data, sid, c, osm);
+
+  test("the route's outer lane edge stays clear of the opposite carriageway", () => {
+    const oppHalf = (corr.laneSpacing("J1.out") * c.segments["J1.out"].lanes) / 2;
+    let worst = Infinity;
+    for (let x = 0; x <= c.segments.route.endX; x += 5) {
+      const edge = corr.pose("route", x, c.segments.route.lanes - 0.5).p;
+      worst = Math.min(worst, corr.opposing.project(edge).dist - oppHalf);
+    }
+    expect(worst).toBeGreaterThan(0.5);
+  });
+});
