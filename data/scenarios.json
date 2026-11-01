@@ -115,6 +115,17 @@
       "passedRule": { "value": "rear of ambulance crosses the far edge of the junction box", "kind": "assumption", "note": "Box depth along the route = width of the cross road (left + right lanes x lane width)." },
       "alertEntryRule": { "value": "conflicting greens go amber then all-red before the ambulance's arm turns green", "kind": "assumption", "note": "Same intergreen as everywhere else (5 s). If the ambulance's arm is already green, it stays green. Not stated in the concept; added for safety." }
     },
+    "crossArmDrawing": {
+      "_note": "Drawing only; the engine keeps its lanes and volumes. A cross arm follows its OSM road (geometry.osm.crossArms), and its inbound lanes are drawn no wider than this from the road's centreline, by OSM highway class, so traffic stays on the street instead of in the buildings beside it. Where the scenario has more lanes than fit, they are drawn closer together: a busy arm on a narrow street reads as a packed street.",
+      "maxHalfWidth_m": {
+        "trunk":       { "value": 10.5, "unit": "m", "kind": "assumption", "note": "3 lanes x 3.5 m each way." },
+        "primary":     { "value": 10.5, "unit": "m", "kind": "assumption", "note": "3 lanes x 3.5 m each way." },
+        "secondary":   { "value": 7,    "unit": "m", "kind": "assumption", "note": "2 lanes x 3.5 m each way." },
+        "tertiary":    { "value": 7,    "unit": "m", "kind": "assumption", "note": "2 lanes x 3.5 m each way." },
+        "residential": { "value": 3.5,  "unit": "m", "kind": "assumption", "note": "1 lane each way; a narrow street." },
+        "other":       { "value": 3.5,  "unit": "m", "kind": "assumption", "note": "Any other class: as residential." }
+      }
+    },
     "buildings": {
       "_note": "Heights for OSM buildings in the 3D city (S20). Use the OSM 'height' tag when present, else these rules in order.",
       "metresPerLevel": { "value": 3, "unit": "m", "src": "S20", "kind": "assumption", "note": "Height = 3 m x building:levels when only levels are tagged." },
@@ -214,7 +225,7 @@
             "J1": { "value": ["way/1132394873", "way/1132394874"], "src": "S20", "kind": "assumption", "note": "Shaheed Major Vikas Yadav Marg, both carriageways. J1 centre = midpoint of where they cross routeWay. Drawn straight through: the scenario's turn at J1 (ambulanceMovement.atJ1) has no road to follow in this export." },
             "J2": { "value": ["way/45250068"], "src": "S20", "kind": "assumption", "note": "Sector Main Road (tertiary)." }
           },
-          "crossArms": { "value": "perpendicular to the route, left of centre", "kind": "assumption", "note": "Cross-arm traffic is drawn on straight lines at right angles to the route; the real cross roads meet it at roughly 80-85 degrees. Each direction keeps to the left (India drives on the left)." },
+          "crossArms": { "value": "along the OSM road leaving the junction on that side, left of centre", "kind": "assumption", "note": "src/geo follows the cross road outward through the OSM road network (straightest way on at each node, skipping footways and service roads). Where the cross road meets the main road a little way along (a staggered junction), the arm jogs from the junction centre to it. Straight, at right angles to the route, only where no road is mapped. Each direction keeps to the left (India drives on the left); lane widths per global.crossArmDrawing." },
           "j1ToJ2Tolerance_m": { "value": 2, "unit": "m", "kind": "assumption", "note": "src/geo refuses to draw if the OSM J1 -> J2 length differs from j1ToJ2_m by more than this." }
         },
         "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "From signal.approachWidth_m note (3 x 3.5 m)." },
@@ -314,7 +325,7 @@
             "J1": { "value": ["way/1458276064"], "src": "S20", "kind": "assumption", "note": "6th Main Road where it crosses 100 Feet Road from the east. In OSM the west side is offset about 50 m (way/59358833), so this is closer to a T; cross arms are drawn straight through." },
             "J2": { "value": ["way/691155644", "way/24403280"], "src": "S20", "kind": "assumption", "note": "12th Main Road, both carriageways east of 100 Feet Road. J2 centre = midpoint of where they meet routeWay." }
           },
-          "crossArms": { "value": "perpendicular to the route, left of centre", "kind": "assumption", "note": "As Gurugram: cross-arm traffic is drawn on straight lines at right angles to the route. Each direction keeps to the left." },
+          "crossArms": { "value": "along the OSM road leaving the junction on that side, left of centre", "kind": "assumption", "note": "src/geo follows the cross road outward through the OSM road network (straightest way on at each node, skipping footways and service roads). Where the cross road meets the main road a little way along (a staggered junction), the arm jogs from the junction centre to it. Straight, at right angles to the route, only where no road is mapped. Each direction keeps to the left (India drives on the left); lane widths per global.crossArmDrawing." },
           "j1ToJ2Tolerance_m": { "value": 2, "unit": "m", "kind": "assumption", "note": "src/geo refuses to draw if the OSM J1 -> J2 length differs from j1ToJ2_m by more than this." }
         },
         "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "Same lane width the Gurugram approachWidth note uses (3 x 3.5 m)." },

@@ -1,7 +1,8 @@
 // A red dimension line beside the route from the ambulance to the next junction it has not passed, with end ticks,
 // and its length ("431 M") lying flat on the ground in the middle of the line, in the same perspective as the road.
 // The line breaks around the number. Length = the engine's distance to the junction centre, the same distance
-// the trigger uses. Line and text are flat strips on the ground, rebuilt every frame; the text is a canvas texture.
+// the trigger uses. Line and text are flat strips on the ground, rebuilt every frame and drawn over the buildings;
+// the text is a canvas texture.
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, type Group, type Mesh, SRGBColorSpace, Vector3 } from "three";
@@ -22,9 +23,9 @@ const LINE_W = 0.0028;
 /** End ticks, from side to side. */
 const TICK_W = 0.016;
 /** Height of the number (it is foreshortened by the camera's tilt). */
-const TEXT_H = 0.022;
+const TEXT_H = 0.016;
 /** Clear ground either side of the number before the line resumes. */
-const TEXT_PAD = 0.006;
+const TEXT_PAD = 0.005;
 const MAX_QUADS = 1200;
 
 // Fixed canvas size: a texture keeps the size it was first uploaded at, so a resized canvas would leave old pixels.
@@ -53,8 +54,8 @@ export function DistanceLine() {
     return { canvas, texture };
   }, []);
   useEffect(() => () => { geometry.dispose(); text.texture.dispose(); }, [geometry, text]);
-  // Below the bloom threshold, like the other white text in the scene.
-  const red = useMemo(() => new Color(scene.distance), []);
+  // Bright enough to just pass the bloom threshold, so it glows softly like the blue route.
+  const red = useMemo(() => new Color(scene.distance).multiplyScalar(2.2), []);
   const a = useMemo(() => new Vector3(), []);
   const b = useMemo(() => new Vector3(), []);
 
@@ -134,13 +135,14 @@ export function DistanceLine() {
 
   return (
     <group>
-      <mesh ref={strip} geometry={geometry} frustumCulled={false} renderOrder={1}>
-        <meshBasicMaterial color={red} transparent opacity={0.9} depthWrite={false} side={DoubleSide} />
+      {/* Drawn over the buildings (no depth test), so a tall block never hides the measurement. */}
+      <mesh ref={strip} geometry={geometry} frustumCulled={false} renderOrder={5}>
+        <meshBasicMaterial color={red} transparent opacity={0.9} depthWrite={false} depthTest={false} toneMapped={false} side={DoubleSide} />
       </mesh>
       <group ref={label}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={5}>
           <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial map={text.texture} color="#D9D9D9" transparent depthWrite={false} side={DoubleSide} />
+          <meshBasicMaterial map={text.texture} color="#D9D9D9" transparent depthWrite={false} depthTest={false} side={DoubleSide} />
         </mesh>
       </group>
     </group>

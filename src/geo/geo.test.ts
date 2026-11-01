@@ -37,3 +37,32 @@ describe("Gurugram corridor on OSM", () => {
     for (const f of corridor.footprints) expect(f.height).toBeGreaterThan(0);
   });
 });
+
+/** Even-odd test against a ring of map points. */
+function inside(p: [number, number], ring: [number, number][]): boolean {
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+describe.each(["gurugram-monday-peak", "bengaluru-heavy-rain"])("cross arms on the OSM roads: %s", (sid) => {
+  const c = buildConfig(data, sid);
+  const osm = readFileSync(new URL(`../../data/osm/${osmFileFor(data, sid)}`, import.meta.url), "utf8");
+  const corr = buildCorridor(data, sid, c, osm);
+
+  test("cross-arm traffic follows its road, not through buildings", () => {
+    const samples: [number, number][] = [];
+    for (const seg of ["J1.left", "J1.right", "J2.left", "J2.right"] as const) {
+      const s = c.segments[seg];
+      for (let x = 0; x <= s.stops[0].x; x += 5) {
+        for (let lane = 0; lane < s.lanes; lane++) samples.push(corr.pose(seg, x, lane).p as [number, number]);
+      }
+    }
+    const blocked = samples.filter((p) => corr.footprints.some((f) => inside(p, f.rings[0] as [number, number][])));
+    expect(blocked.length / samples.length).toBeLessThan(0.02);
+  });
+});

@@ -2,6 +2,7 @@
 // The engine route runs straight; here each engine coordinate becomes a point on a real carriageway.
 import { at, num, scenarioById, type Lookup } from "../engine/data";
 import { JUNCTIONS, type JunctionId, type SegmentId, type SimConfig } from "../engine/types";
+import { crossArmLine, roadGraph, type CrossArm } from "./crossArms";
 import { buildingHeight, type HeightRules } from "./heights";
 import { parseOsm, type OsmData } from "./osm";
 import { offsetRight, Polyline, type Pose } from "./polyline";
@@ -33,6 +34,9 @@ export interface Corridor {
   /** World pose of a vehicle's lane centre. `lane` may be fractional while changing lanes. */
   pose(segment: SegmentId, x: number, lane: number): Pose;
 }
+
+/** OSM highway types that are not roads for traffic: a cross arm never follows these. */
+const NOT_TRAFFIC = new Set(["footway", "path", "pedestrian", "steps", "cycleway", "bridleway", "corridor", "track", "service"]);
 
 const list = (ctx: Lookup, path: string) => (at(ctx, path) as { value: string[] }).value;
 /** One way id, or several that join end to end (a carriageway OSM splits into pieces). */
@@ -112,6 +116,23 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
   const laneWidth = num(ctx, "geometry.laneWidth_m");
   const across = (lane: number, lanes: number) => (lane - (lanes - 1) / 2) * laneWidth;
 
+  // Cross arms on the real cross roads (geometry.osm.crossArms), from the junction centre outward.
+  const traffic = osm.roads.filter((r) => !NOT_TRAFFIC.has(String(r.tags.highway)));
+  const mainWays = new Set([...ways(ctx, `${o}.routeWay`), ...ways(ctx, `${o}.opposingWay`)]);
+  const graph = roadGraph(traffic.map((r) => ({ id: r.id, highway: String(r.tags.highway), pts: r.pts.map(project) })), mainWays);
+  const armLines = {} as Record<`${JunctionId}.${"left" | "right"}`, CrossArm | null>;
+  // Drawing only: an arm's inbound lanes are squeezed to fit the mapped street (global.crossArmDrawing).
+  const maxHalf = at(ctx, "global.crossArmDrawing.maxHalfWidth_m") as Record<string, unknown>;
+  const halfWidthFor = (highway: string) => num(ctx, maxHalf[highway] ?? maxHalf.other);
+  for (const jid of JUNCTIONS) {
+    const d = route.at(junctionS[jid]).dir;
+    for (const role of ["left", "right"] as const) {
+      const seg = cfg.segments[`${jid}.${role}`];
+      const side: XY = role === "left" ? [-d[1], d[0]] : [d[1], -d[0]];
+      armLines[`${jid}.${role}`] = crossArmLine(graph, junctionXY[jid], side, seg.stops[0].x + (seg.endX - seg.stops[0].x) / 2);
+    }
+  }
+
   const pose = (segment: SegmentId, x: number, lane: number): Pose => {
     const seg = cfg.segments[segment];
     if (segment === "route") {
@@ -125,10 +146,19 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
       const base = opposing.at(opposingS[jid] - j.boxDepth / 2 - stopX + x);
       return { p: offsetRight(base, across(lane, seg.lanes)), dir: base.dir };
     }
-    // Cross arms: straight, at right angles to the route, keeping left (geometry.osm.crossArms).
+    // Cross arms, keeping left (geometry.osm.crossArms). u = distance out from the junction centre; inside the
+    // box (u < 0) the line carries on straight across.
+    const halfCrossing = (seg.endX - stopX) / 2;
+    const arm = armLines[`${jid}.${role}`];
+    if (arm) {
+      const out = arm.line.at(stopX + halfCrossing - x);
+      const base: Pose = { p: out.p, dir: [-out.dir[0], -out.dir[1]] };
+      const spacing = Math.min(laneWidth, halfWidthFor(arm.highway) / seg.lanes);
+      return { p: offsetRight(base, -spacing * seg.lanes + spacing * (lane + 0.5)), dir: base.dir };
+    }
+    // No mapped road on this side: straight, at right angles to the route.
     const d = route.at(junctionS[jid]).dir;
     const side: XY = role === "left" ? [-d[1], d[0]] : [d[1], -d[0]];
-    const halfCrossing = (seg.endX - stopX) / 2;
     const c = junctionXY[jid];
     const start: XY = [c[0] + side[0] * (stopX + halfCrossing), c[1] + side[1] * (stopX + halfCrossing)];
     const dir: XY = [-side[0], -side[1]];
