@@ -2,6 +2,8 @@
 // and each approach's light and queue, all read from the engine at the current time.
 import { blue, junctionQueues, lights, ROLES, type JunctionId, type Light, type Role, type SimConfig, type SimState } from "../engine";
 import { DataBadge, type DataNode } from "./DataBadge";
+import { Explain } from "./Explain";
+import { explain, STATE_EXPLAIN } from "./explanations";
 import { STATE_TEXT } from "./junctionText";
 
 const ROLE_TEXT: Record<Role, string> = {
@@ -28,15 +30,15 @@ export function JunctionDetail({ cfg, state, junction, cycle, queuedBelow, queue
 
   return (
     <div className="detail">
-      <div className="detail__state">
+      <Explain className="detail__state" tip={{ body: STATE_EXPLAIN[c.state] }}>
         <span className={`lamp lamp--${blue(c)}`} aria-hidden="true" />
         {STATE_TEXT[c.state]}
-      </div>
+      </Explain>
 
       <div className="row">
-        <span className="row__label">{held ? "Cycle held at" : "Cycle"}</span>
+        <Explain className="row__label" tip={{ body: explain.cycle }}>{held ? "Cycle held at" : "Cycle"}</Explain>
         <span className="row__value pill">
-          {Math.floor(c.cycleClock)} s of <DataBadge node={cycle} unit="s" digits={0} />
+          {Math.floor(c.cycleClock)} s of <DataBadge node={cycle} unit="s" digits={0} explain={explain.cycleLength} />
         </span>
       </div>
 
@@ -44,15 +46,15 @@ export function JunctionDetail({ cfg, state, junction, cycle, queuedBelow, queue
         <thead>
           <tr>
             <th scope="col">Approach</th>
-            <th scope="col">Light</th>
-            <th scope="col" className="arms__num">Queue</th>
+            <th scope="col"><Explain tip={{ body: explain.light }}>Light</Explain></th>
+            <th scope="col" className="arms__num"><Explain tip={{ body: explain.queue }}>Queue</Explain></th>
           </tr>
         </thead>
         <tbody>
           {ROLES.map((role) => (
             <tr key={role}>
               <th scope="row">
-                {ROLE_TEXT[role]}
+                <Explain tip={{ body: explain.approach[role] }}>{ROLE_TEXT[role]}</Explain>
                 {j.arms[role].name && <span className="arms__sub">{j.arms[role].name}</span>}
               </th>
               <td><LightDot light={now[role]} /></td>
@@ -67,7 +69,7 @@ export function JunctionDetail({ cfg, state, junction, cycle, queuedBelow, queue
 
       <p className="detail__note">
         Queue: longest lane, from the stop line back while traffic is under{" "}
-        <DataBadge node={queuedBelow} unit="km/h" digits={0} />. Engine, this run.
+        <DataBadge node={queuedBelow} unit="km/h" digits={0} explain={explain.queuedBelow} />. Engine, this run.
       </p>
       <a className="detail__back" href="#map">← Back to map</a>
     </div>

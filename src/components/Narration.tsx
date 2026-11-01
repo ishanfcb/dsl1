@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from "motion/react";
 import type { Simulation, SimState } from "../engine";
 import type { ScenarioView } from "../views/useScenario";
 import { DataBadge } from "./DataBadge";
+import { Explain } from "./Explain";
+import { explain } from "./explanations";
 import { formatMinSec } from "./RunChart";
 import { ambulanceOf } from "../scene/vehiclePose";
 
@@ -23,7 +25,9 @@ function describe(sc: ScenarioView, sim: Simulation, s: Readonly<SimState>): Lin
   const a = s.ambulance;
   const amb = ambulanceOf(s);
   const system = sim.system;
-  const siren = <DataBadge node={sc.sirenRange} unit="m" digits={0} />;
+  const siren = <DataBadge node={sc.sirenRange} unit="m" digits={0} explain={explain.sirenRange} />;
+  const eta = <DataBadge node={sc.triggerEta} unit="s" digits={0} explain={explain.triggerEta} />;
+  const backup = <DataBadge node={sc.triggerDistance} unit="m" digits={0} explain={explain.triggerDistance} />;
 
   if (a.enteredAt === null || (!amb && a.passedJ2At === null)) {
     return { phase: "waiting", headline: "No ambulance on the road yet.", detail: "Both signals run their normal cycle." };
@@ -71,11 +75,11 @@ function describe(sc: ScenarioView, sim: Simulation, s: Readonly<SimState>): Lin
       detail: byEta ? (
         <>
           It switched {Math.round(alert.ambulanceDist!)} m out, when the ambulance was{" "}
-          <DataBadge node={sc.triggerEta} unit="s" digits={0} /> away. {J2} is green too, so its queue clears early.
+          {eta} away. {J2} is green too, so its queue clears early.
         </>
       ) : (
         <>
-          It switched at <DataBadge node={sc.triggerDistance} unit="m" digits={0} />, the backup for a slow ambulance. {J2} is green
+          It switched at {backup}, the backup for a slow ambulance. {J2} is green
           too, so its queue clears early.
         </>
       ),
@@ -87,8 +91,7 @@ function describe(sc: ScenarioView, sim: Simulation, s: Readonly<SimState>): Lin
     headline: `Ambulance is ${d} m from ${J1}.`,
     detail: system ? (
       <>
-        {pace} {J1} reads its GPS and turns green at <DataBadge node={sc.triggerEta} unit="s" digits={0} /> away, or{" "}
-        <DataBadge node={sc.triggerDistance} unit="m" digits={0} />.
+        {pace} {J1} reads its GPS and turns green at {eta} away, or {backup}.
       </>
     ) : (
       <>{pace} No system: drivers hear the siren only within {siren}.</>
@@ -117,7 +120,7 @@ export function Narration({ sc, sim, state, reducedMotion }: {
     <div className="narration">
       <div className="narration__head">
         <span>{sim.system ? "With system" : "Without system"}</span>
-        {step > 0 && <span className="narration__step">{`Step ${step} of ${steps.length}`}</span>}
+        {step > 0 && <Explain className="narration__step" tip={{ body: explain.step }}>{`Step ${step} of ${steps.length}`}</Explain>}
       </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={`${sim.system}-${line.phase}`} {...fade}>

@@ -81,6 +81,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
 - Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
 - Left panel, top to bottom: the nav as one segmented row of the built pages (Map / Junction for now; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
 - All other text and data live in the panel. The visual carries only: junction pins, the distance from the ambulance to the next junction (a red dimension line beside the route with the number on the ground), a small frosted-glass narration card top right (what is happening now, two plain lines, from engine state), the city switch and the OSM credit.
+- Hover notes: resting the pointer on any value or control for 2 s shows a small frosted box with one plain sentence on what it is; numbers also name their source (read from DATA_SOURCES.md) and their kind. Wording lives in `src/components/explanations.ts`.
 - No shadows, no gradients, no emoji.
 
 ### Visualisation (dark 3D city, like `city-3d.jpg` and `route-glow.jpg`)

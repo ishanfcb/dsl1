@@ -4,6 +4,7 @@
 // dot for the ambulance; the other run stays a faint track.
 import { useEffect, useRef, useState } from "react";
 import { scaleLinear } from "d3-scale";
+import { useExplain, type Tip } from "./Explain";
 import type { RunMarks } from "./runMarks";
 
 export function formatMinSec(s: number): string {
@@ -33,15 +34,18 @@ function useWidth() {
   return [ref, w] as const;
 }
 
-export function RunChart({ without, withSystem, system, now }: {
+export function RunChart({ without, withSystem, system, now, tips }: {
   without: RunMarks;
   withSystem: RunMarks;
   /** Which run is on screen. */
   system: boolean;
   /** Seconds since entry on the run on screen. */
   now: number;
+  /** Hover notes for the two bars. */
+  tips?: { without: Tip; withSystem: Tip };
 }) {
   const [ref, W] = useWidth();
+  const hover = [useExplain(tips?.without ?? null), useExplain(tips?.withSystem ?? null)];
   const x = scaleLinear().domain([0, Math.max(without.end, withSystem.end)]).range([LABEL_W, W - END_W]);
   const rows = [
     { name: "Without", marks: without, current: !system, y: TOP },
@@ -66,7 +70,9 @@ export function RunChart({ without, withSystem, system, now }: {
           Object.assign(passed[1], { anchor: "start", nudge: 2 });
         }
         return (
-          <g key={name} className={current ? "run__row run__row--current" : "run__row"}>
+          <g key={name} className={current ? "run__row run__row--current" : "run__row"} {...hover[i]}>
+            {/* Invisible band over the row, so the whole bar answers to the pointer, not only its thin lines. */}
+            <rect x={0} y={y - 14} width={W} height={28} fill="transparent" />
             <text className="run__name" x={0} y={y + 4}>{name}</text>
             <rect className="run__track" x={x(0)} y={y - 2} width={x(marks.end) - x(0)} height={4} rx={2} />
             {current && <rect className="run__fill" x={x(0)} y={y - 2} width={head - x(0)} height={4} rx={2} />}

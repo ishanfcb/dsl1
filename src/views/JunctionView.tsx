@@ -1,6 +1,7 @@
 // Junction page: the shell pieces around the close-up of one junction. The scene and timeline are CorridorPage's.
 import type { JunctionId, SimState } from "../engine";
 import { DataBadge } from "../components/DataBadge";
+import { explain } from "../components/explanations";
 import { JunctionDetail } from "../components/JunctionDetail";
 import type { ScenarioView } from "./useScenario";
 
@@ -21,8 +22,8 @@ export function JunctionStory({ sc, junction }: { sc: ScenarioView; junction: Ju
   // n+1: J2 turns green with a steady blue light while the ambulance approaches J1, and blinks once it passes J1.
   return junction === "J1" ? (
     <>
-      The ambulance sends its position and speed every few seconds. Once it is <DataBadge node={sc.triggerEta} unit="s" digits={0} /> from{" "}
-      {sc.names.J1}, or within <DataBadge node={sc.triggerDistance} unit="m" digits={0} />, whichever comes first, {sc.names.J1} turns
+      The ambulance sends its position and speed every few seconds. Once it is <DataBadge node={sc.triggerEta} unit="s" digits={0} explain={explain.triggerEta} /> from{" "}
+      {sc.names.J1}, or within <DataBadge node={sc.triggerDistance} unit="m" digits={0} explain={explain.triggerDistance} />, whichever comes first, {sc.names.J1} turns
       green for it, its blue lights blink and every other approach turns red. {sc.names.J2} turns green for it too, with a steady
       blue light, so its queue clears before the ambulance gets there.
     </>

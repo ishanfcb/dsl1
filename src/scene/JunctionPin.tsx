@@ -6,6 +6,8 @@ import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { BufferGeometry, Color, Float32BufferAttribute, type LineBasicMaterial, type LineSegments, Vector3 } from "three";
 import { blue, type JunctionId, type JunctionState } from "../engine";
+import { useExplain } from "../components/Explain";
+import { explain } from "../components/explanations";
 import { STATE_TEXT } from "../components/junctionText";
 import { scene } from "../styles/tokens";
 import { BEACON_HEIGHT } from "./SignalBeacon";
@@ -88,9 +90,10 @@ export function JunctionPin({ junction, labels }: { junction: JunctionId; labels
 
 /** The DOM half of a pin. Positioned and coloured by JunctionPin. */
 export function PinLabel({ junction, name, register }: { junction: JunctionId; name: string; register(el: HTMLDivElement | null): void }) {
+  const hover = useExplain({ body: explain.pin });
   return (
     <div className="pin-anchor" ref={register}>
-      <a className="pin" href={`#junction/${junction}`} title="Open the junction view">
+      <a className="pin" href={`#junction/${junction}`} {...hover}>
         <svg className="pin__icon" viewBox="0 0 24 24" aria-hidden="true">
           <circle className="pin__dot" cx="12" cy="12" r="11" />
           <circle cx="12" cy="12" r="4" fill="none" stroke="#fff" strokeWidth="2" />

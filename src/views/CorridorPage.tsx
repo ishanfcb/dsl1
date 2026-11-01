@@ -7,6 +7,8 @@ import { useKeyboard } from "../input/useKeyboard";
 import { useTimeline } from "../input/useTimeline";
 import { CityScene } from "../scene/CityScene";
 import { DataBadge } from "../components/DataBadge";
+import { Explain, ExplainLayer } from "../components/Explain";
+import { explain } from "../components/explanations";
 import { Narration } from "../components/Narration";
 import { formatMinSec, RunChart } from "../components/RunChart";
 import { RealTimeClock } from "../components/RealTimeClock";
@@ -83,9 +85,9 @@ export function CorridorPage({ route, scenario, onScenario }: {
           <header className="intro">
             <h2 className="title">{focus ? "Junction close-up" : "Corridor overview"}</h2>
             <dl className="meta">
-              <div><dt>Place</dt><dd>{sc.place}</dd></div>
-              <div><dt>When</dt><dd>{sc.dayTime}</dd></div>
-              <div><dt>Traffic</dt><dd><DataBadge node={sc.speed} unit="km/h" /></dd></div>
+              <div><dt>Place</dt><dd><Explain tip={{ body: explain.place }}>{sc.place}</Explain></dd></div>
+              <div><dt>When</dt><dd><Explain tip={{ body: explain.when }}>{sc.dayTime}</Explain></dd></div>
+              <div><dt>Traffic</dt><dd><DataBadge node={sc.speed} unit="km/h" explain={explain.trafficSpeed} /></dd></div>
             </dl>
             <p className="story">
               {focus ? <JunctionStory sc={sc} junction={focus} /> : <MapStory place={sc.place} destination={sc.destination} conditions={sc.conditions} />}
@@ -95,19 +97,32 @@ export function CorridorPage({ route, scenario, onScenario }: {
           <Section label="Time saved">
             <div className="saved">
               {/* The label says "time saved"; a run where the system loses time shows as negative. */}
-              {sc.runs.timeSaved === null ? "No result" : `${sc.runs.timeSaved < 0 ? "−" : ""}${formatMinSec(sc.runs.timeSaved)}`}
-              <span className="saved__estimate">*estimated</span>
+              <Explain tip={{ body: explain.timeSaved }}>
+                {sc.runs.timeSaved === null ? "No result" : `${sc.runs.timeSaved < 0 ? "−" : ""}${formatMinSec(sc.runs.timeSaved)}`}
+              </Explain>
+              <Explain className="saved__estimate" tip={{ body: explain.estimated }}>*estimated</Explain>
             </div>
             <div className="row">
-              <div className="toggle" role="group" aria-label="System">
-                <button aria-pressed={!system} onClick={() => setSystem(false)}>Without</button>
-                <button aria-pressed={system} onClick={() => setSystem(true)}>With system</button>
-              </div>
-              <RealTimeClock elapsed={t - entered} />
+              <Explain tip={{ body: explain.toggle }}>
+                <div className="toggle" role="group" aria-label="System">
+                  <button aria-pressed={!system} onClick={() => setSystem(false)}>Without</button>
+                  <button aria-pressed={system} onClick={() => setSystem(true)}>With system</button>
+                </div>
+              </Explain>
+              <Explain tip={{ body: explain.clock(sc.cfg) }}>
+                <RealTimeClock elapsed={t - entered} />
+              </Explain>
             </div>
-            <RunChart without={sc.marks.without} withSystem={sc.marks.with} system={system} now={t - entered} />
+            <RunChart
+              without={sc.marks.without}
+              withSystem={sc.marks.with}
+              system={system}
+              now={t - entered}
+              tips={{ without: { body: explain.runWithout(sc.cfg) }, withSystem: { body: explain.runWith(sc.cfg) } }}
+            />
             <p className="note">
-              *Estimated by the simulation: same traffic, same seed, run with and without the system. Ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> with the system, <DataBadge node={sc.ambulanceWithout} unit="km/h" /> without.
+              *Estimated by the simulation: same traffic, same seed, run with and without the system. Ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" explain={explain.ambulanceWith} /> with the system,{" "}
+              <DataBadge node={sc.ambulanceWithout} unit="km/h" explain={explain.ambulanceWithout} /> without.
             </p>
           </Section>
 
@@ -122,8 +137,10 @@ export function CorridorPage({ route, scenario, onScenario }: {
           </Section>
         </div>
 
-        <footer className="panel__foot" title="Proxy: real data from a similar place. Assumption: no public data found. Hover a value for its note.">
-          <span className="badge__mark legend__mark" aria-hidden="true" /> Proxy or assumption · hover for the note
+        <footer className="panel__foot">
+          <Explain tip={{ body: explain.legend }}>
+            <span className="badge__mark legend__mark" aria-hidden="true" /> Proxy or assumption · hover for the note
+          </Explain>
         </footer>
       </aside>
 
@@ -134,6 +151,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
           <CityToggle current={scenario} onChange={onScenario} />
         </Frame>
       </main>
+      <ExplainLayer />
     </div>
   );
 }

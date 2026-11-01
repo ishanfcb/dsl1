@@ -1,12 +1,15 @@
 // Bottom-right switch between the corridors. A city without its OSM export cannot be picked; one still being
 // prepared in the background (engine runs, buildings) shows as preparing and becomes selectable when done.
 import { useEffect } from "react";
+import { useExplain } from "../components/Explain";
+import { explain } from "../components/explanations";
 import { useCityReady } from "./prepareCities";
 import { CITIES, prewarmScenario } from "./useScenario";
 
 export function CityToggle({ current, onChange }: { current: string; onChange(id: string): void }) {
+  const hover = useExplain({ body: explain.cityToggle });
   return (
-    <div className="toggle city-toggle" role="group" aria-label="City">
+    <div className="toggle city-toggle" role="group" aria-label="City" {...hover}>
       {CITIES.map((c) => (
         <CityButton key={c.id} city={c} current={c.id === current} onChange={onChange} />
       ))}

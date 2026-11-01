@@ -554,3 +554,44 @@ body {
   color: rgba(237, 237, 237, 0.72);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- hover notes (Explain): a small frosted box above what the pointer rests on ---- */
+.explain {
+  cursor: help;
+}
+.tip {
+  position: fixed;
+  z-index: 50;
+  max-width: 300px;
+  padding: 10px 13px 11px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(19, 20, 23, 0.78);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  pointer-events: none;
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: left;
+}
+.tip__body {
+  font-size: var(--fs-s);
+  line-height: 1.45;
+  color: var(--text);
+}
+.tip__meta {
+  display: grid;
+  gap: 2px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--muted);
+}
+.tip__note {
+  margin-top: 3px;
+  color: rgba(139, 144, 151, 0.85);
+}
