@@ -35,9 +35,9 @@ export function JunctionDetail({ cfg, state, junction, name, cycle, queuedBelow,
         {STATE_TEXT[c.state]}
       </div>
 
-      <div className="detail__row">
-        <span className="status__label">{held ? "Cycle held at" : "Cycle"}</span>
-        <span className="status__value">
+      <div className="row">
+        <span className="row__label">{held ? "Cycle held at" : "Cycle"}</span>
+        <span className="row__value pill">
           {Math.floor(c.cycleClock)} s of <DataBadge node={cycle} unit="s" digits={0} />
         </span>
       </div>

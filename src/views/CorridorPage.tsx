@@ -1,5 +1,5 @@
-// Map and Junction pages share this shell, one 3D scene and one timeline: switching between them only moves
-// the camera and swaps the side caption, so the moment on screen never changes. Holds no simulation state.
+// Map and Junction pages share this layout, one 3D scene and one timeline: switching between them only moves
+// the camera and swaps the panel text, so the moment on screen never changes. Holds no simulation state.
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { JunctionId } from "../engine";
@@ -11,9 +11,9 @@ import { PhaseTimeline } from "../components/PhaseTimeline";
 import { RealTimeClock } from "../components/RealTimeClock";
 import { TimeSaved } from "../components/TimeSaved";
 import { useEngineTime } from "../components/useEngineTime";
-import { Caption } from "../shell/Caption";
 import { Frame } from "../shell/Frame";
 import { Masthead } from "../shell/Masthead";
+import { Section } from "../shell/Section";
 import { hrefOf, type Route } from "../shell/useRoute";
 import { JunctionSide, JunctionStory } from "./JunctionView";
 import { MapSide, MapStory } from "./MapView";
@@ -70,23 +70,38 @@ export function CorridorPage({ route }: { route: Exclude<Route, { page: "debug" 
 
   return (
     <div className="page">
-      <Masthead active={focus ? "Junction" : "Map"} />
+      <aside className="panel">
+        <Masthead active={focus ? "Junction" : "Map"} />
 
-      <main className="stage">
-        <h2 className="section-label">{focus ? "Junction" : "Map"}</h2>
-        <Frame credit="© OpenStreetMap contributors">
-          <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
-        </Frame>
-        <aside className="side" aria-live="polite">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={focus ?? "map"} {...fade}>
-              {focus ? <JunctionSide sc={sc} state={state} junction={focus} /> : <MapSide state={state} names={sc.names} />}
-            </motion.div>
-          </AnimatePresence>
-        </aside>
-        <Caption
-          name={<>{sc.place} · {sc.dayTime}<br /><DataBadge node={sc.speed} unit="km/h" /></>}
-          middle={
+        <div className="panel__body">
+          <header className="intro">
+            <h2 className="title">{focus ? <>Junction<br />close-up</> : <>Corridor<br />overview</>}</h2>
+            <div className="chips">
+              <span className="chip">{sc.place}</span>
+              <span className="chip">{sc.dayTime}</span>
+              <span className="chip"><DataBadge node={sc.speed} unit="km/h" /></span>
+            </div>
+            <p className="story">
+              {focus ? <JunctionStory sc={sc} junction={focus} /> : <MapStory place={sc.place} destination={sc.destination} />}
+            </p>
+          </header>
+
+          <Section label="Playback">
+            <div className="row">
+              <span className="row__label">System</span>
+              <div className="toggle" role="group" aria-label="System">
+                <button aria-pressed={!system} onClick={() => setSystem(false)}>Without</button>
+                <button aria-pressed={system} onClick={() => setSystem(true)}>With</button>
+              </div>
+            </div>
+            <RealTimeClock elapsed={t - entered} compression={sc.compression} />
+          </Section>
+
+          <Section label="Time saved">
+            <TimeSaved
+              seconds={sc.runs.timeSaved}
+              source={<>Engine, same seed · ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> vs <DataBadge node={sc.ambulanceWithout} unit="km/h" /></>}
+            />
             <PhaseTimeline
               current={system ? sc.marks.with : sc.marks.without}
               other={system ? sc.marks.without : sc.marks.with}
@@ -94,33 +109,29 @@ export function CorridorPage({ route }: { route: Exclude<Route, { page: "debug" 
               otherLabel={system ? "Without" : "With"}
               now={t - entered}
             />
-          }
-          value={
-            <TimeSaved
-              seconds={sc.runs.timeSaved}
-              source={<>Engine, same seed · ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> vs <DataBadge node={sc.ambulanceWithout} unit="km/h" /></>}
-            />
-          }
-        />
-      </main>
+          </Section>
 
-      <footer className="foot">
-        <div className="legend">
-          <RealTimeClock elapsed={t - entered} compression={sc.compression} />
-          <div className="toggle" role="group" aria-label="System">
-            <span className="status__label">System</span>
-            <button aria-pressed={!system} onClick={() => setSystem(false)}>Without</button>
-            {" / "}
-            <button aria-pressed={system} onClick={() => setSystem(true)}>With</button>
-          </div>
-          <div title="Proxy: real data from a similar place. Assumption: no public data found. Hover a value for its note.">
-            <span className="badge__mark legend__mark" aria-hidden="true" /> Proxy / assumption
-          </div>
+          <Section label={focus ? "Junction" : "Junctions"}>
+            <div aria-live="polite">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div key={focus ?? "map"} {...fade}>
+                  {focus ? <JunctionSide sc={sc} state={state} junction={focus} /> : <MapSide state={state} names={sc.names} />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </Section>
         </div>
-        <p className="story">
-          {focus ? <JunctionStory sc={sc} junction={focus} /> : <MapStory place={sc.place} destination={sc.destination} />}
-        </p>
-      </footer>
+
+        <footer className="panel__foot" title="Proxy: real data from a similar place. Assumption: no public data found. Hover a value for its note.">
+          <span className="badge__mark legend__mark" aria-hidden="true" /> Proxy or assumption · hover for the note
+        </footer>
+      </aside>
+
+      <main className="stage">
+        <Frame credit="© OpenStreetMap contributors">
+          <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
+        </Frame>
+      </main>
     </div>
   );
 }

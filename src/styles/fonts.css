@@ -1,0 +1,37 @@
+/* Self-hosted Helvetica from /public/fonts (CLAUDE.md §6, §7: fully offline). The files are licensed, so they are
+   gitignored: a fresh clone falls back to the system stack. There is no medium cut, so weight 500 renders as 400. */
+@font-face {
+  font-family: "EE Helvetica";
+  src: url("/fonts/Helvetica-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "EE Helvetica";
+  src: url("/fonts/Helvetica.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "EE Helvetica";
+  src: url("/fonts/Helvetica-Oblique.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: "EE Helvetica";
+  src: url("/fonts/Helvetica-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "EE Helvetica";
+  src: url("/fonts/Helvetica-BoldOblique.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: block;
+}

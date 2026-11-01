@@ -2,10 +2,10 @@
 // Colour carries meaning: blue = ambulance and its signals, amber = general traffic. Everything else is grey.
 
 export const shell = {
-  page: "#E7E2DC",
-  ink: "#1A1A1A",
-  muted: "#6E6A64",
-  rule: "#1A1A1A",
+  page: "#050506",
+  panel: "#131417",
+  text: "#EDEDED",
+  muted: "#8B9097",
 } as const;
 
 export const scene = {
@@ -35,6 +35,5 @@ export const scene = {
 } as const;
 
 export const fonts = {
-  serif: '"EB Garamond", Georgia, serif',
-  sans: 'Inter, "Helvetica Neue", Arial, sans-serif',
+  sans: '"EE Helvetica", "Helvetica Neue", Helvetica, Arial, sans-serif',
 } as const;

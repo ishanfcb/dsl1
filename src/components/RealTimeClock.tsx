@@ -8,10 +8,15 @@ const mmss = (s: number) => {
 
 export function RealTimeClock({ elapsed, compression }: { elapsed: number; compression: DataNode }) {
   return (
-    <div>
-      <span className="status__label">Real time</span> <span className="status__value">{mmss(elapsed)}</span>
-      {" · "}
-      <DataBadge node={compression} unit="× faster" digits={0} />
-    </div>
+    <>
+      <div className="row">
+        <span className="row__label">Real time</span>
+        <span className="row__value pill">{mmss(elapsed)}</span>
+      </div>
+      <div className="row">
+        <span className="row__label">Playback</span>
+        <span className="row__value"><DataBadge node={compression} unit="× faster" digits={0} /></span>
+      </div>
+    </>
   );
 }

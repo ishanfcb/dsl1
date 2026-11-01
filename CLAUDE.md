@@ -69,19 +69,17 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
 
 ## 6. Visual language
 
-Two layers: a light **editorial shell** that holds a dark **3D city visualisation**, the way a gallery page holds a photograph. References are in `/reference/style/`: `ui-editorial.jpg` (shell), `city-3d.jpg` (city and route), `route-glow.jpg` (traffic ribbons; the file is really a PNG). **Not** gamified, cartoon, glossy-dashboard or neon-sci-fi. Calm and precise.
+Two surfaces side by side on a near-black page: a **text panel** on the left (~30% of the width) and the dark **3D city visualisation** filling the rest. References are in `/reference/style/`: `city-3d.jpg` (city and route), `route-glow.jpg` (traffic ribbons; the file is really a PNG). `ui-editorial.jpg` is retired. **Not** gamified, cartoon, glossy-dashboard or neon-sci-fi. Calm and precise.
 
-If anything elsewhere in this file conflicts with this section on colour or style, this section wins.
+If anything elsewhere in this file conflicts with this section on colour or style, this section wins. (Older wording elsewhere about an "editorial shell", serif text or "framed images" means this panel + visual layout.)
 
-### App shell (editorial, like `ui-editorial.jpg`)
-- Light warm grey page `#E7E2DC`, near-black text `#1A1A1A`. Lots of empty space.
-- Centred serif wordmark **EMERGENCY ENROUTE** at the top.
-- Small stacked uppercase nav at the top right: Scenarios / Map / Junction / Driver / System / Impact. The active item is bold italic.
-- Small bold uppercase section labels.
-- Captions under each visual: uppercase sans name on the left, data value on the right (like the titles and years in the reference). Values keep their source id (`13.2 KM/H · S1`) and assumption marker (§2).
-- A short serif paragraph at the bottom left tells the scenario's story.
-- No cards with shadows, no rounded buttons, no gradients, no emoji. Thin 1 px rules only.
-- The visualisation sits inside the shell as a framed image with clean edges, not full-bleed.
+### App shell (soft panel + visual)
+- Page `#050506`; panel `#131417`; text `#EDEDED`, muted `#8B9097`; faint dividers `rgba(255,255,255,0.1)`.
+- **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight, case and letter-spacing: large light uppercase page title, small medium uppercase tracked section labels, regular body, tabular figures for data. Smooth antialiased text.
+- Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
+- Left panel, top to bottom: wordmark **EMERGENCY ENROUTE** and the nav pills (Scenarios / Map / Junction / Driver / System / Impact); page title; scenario chips; a short story paragraph; then labelled sections with label-left / value-right rows. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
+- All text and data live in the panel. The visual carries only in-scene labels (junction pins) and the OSM credit.
+- No shadows, no gradients, no emoji.
 
 ### Visualisation (dark 3D city, like `city-3d.jpg` and `route-glow.jpg`)
 - Near-black ground `#0B0C0E`.

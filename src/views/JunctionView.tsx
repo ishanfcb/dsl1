@@ -33,9 +33,7 @@ export function JunctionStory({ sc, junction }: { sc: ScenarioView; junction: Ju
     );
   return (
     <>
-      {lead}
-      <br />
-      Drivers ahead leave the middle lane before the siren is within earshot.
+      {lead} Drivers ahead leave the middle lane before the siren is within earshot.
     </>
   );
 }

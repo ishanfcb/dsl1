@@ -1,4 +1,4 @@
-// Centred serif wordmark and the stacked uppercase nav (CLAUDE.md §6).
+// Top of the left panel: the wordmark and the pages as small pills (CLAUDE.md §6).
 const PAGES = ["Scenarios", "Map", "Junction", "Driver", "System", "Impact"] as const;
 export type Page = (typeof PAGES)[number];
 
