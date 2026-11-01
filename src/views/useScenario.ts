@@ -72,6 +72,7 @@ function buildScenario(id: string) {
     compression: at(ctx, "scaling.timeCompression") as DataNode,
     triggerEta: at(ctx, "global.system.triggerEta_s") as DataNode,
     triggerDistance: at(ctx, "global.system.triggerDistance_m") as DataNode,
+    sirenRange: at(ctx, "global.driver.sirenEffectiveRange_urbanIntersection_m") as DataNode,
     cycle: Object.fromEntries(JUNCTIONS.map((j) => [j, deref(ctx, obj(ctx, `sim.signalPlan.${j}`).cycle_s)])) as Record<JunctionId, DataNode>,
     queuedBelow: at(ctx, "global.queue.queuedBelow_kmh") as DataNode,
     queuedBelowMs: num(ctx, "global.queue.queuedBelow_kmh") / 3.6,

@@ -7,6 +7,7 @@ import { useKeyboard } from "../input/useKeyboard";
 import { useTimeline } from "../input/useTimeline";
 import { CityScene } from "../scene/CityScene";
 import { DataBadge } from "../components/DataBadge";
+import { Narration } from "../components/Narration";
 import { formatMinSec, RunChart } from "../components/RunChart";
 import { RealTimeClock } from "../components/RealTimeClock";
 import { useEngineTime } from "../components/useEngineTime";
@@ -129,6 +130,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
       <main className="stage">
         <Frame credit="© OpenStreetMap contributors">
           <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
+          <Narration sc={sc} sim={sim} state={state} reducedMotion={reducedMotion} />
           <CityToggle current={scenario} onChange={onScenario} />
         </Frame>
       </main>

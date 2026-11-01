@@ -32,6 +32,8 @@ export const scene = {
   /** Junction label first line (CLAUDE.md §6: small cyan uppercase). */
   labelCyan: "#5BC8F5",
   labelText: "#FFFFFF",
+  /** Distance from the ambulance to the next junction: the dimension line beside the route. */
+  distance: "#E5484D",
 } as const;
 
 export const fonts = {

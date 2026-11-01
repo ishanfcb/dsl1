@@ -7,6 +7,7 @@ import { scene } from "../styles/tokens";
 import { Ambulance } from "./Ambulance";
 import { CameraRig } from "./CameraRig";
 import { City } from "./City";
+import { DistanceLine } from "./DistanceLine";
 import { Effects } from "./Effects";
 import { JunctionMarkings } from "./JunctionMarkings";
 import { JunctionPin, PinLabel, type PinElements } from "./JunctionPin";
@@ -53,6 +54,7 @@ export function CityScene({ data, junctionNames, focus }: {
           <RouteLanes />
           <TrafficRibbons />
           <RouteStream />
+          <DistanceLine />
           {JUNCTIONS.map((j) => (
             <group key={j}>
               <TriggerRing junction={j} />
