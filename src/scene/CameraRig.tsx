@@ -65,7 +65,14 @@ export function CameraRig() {
   };
   useOrbitDrag(view);
 
+  // A new city: cut straight to it instead of easing across the old one.
+  const corridorSeen = useRef(data.corridor);
   useFrame((_, delta) => {
+    if (corridorSeen.current !== data.corridor) {
+      corridorSeen.current = data.corridor;
+      follow.current = null;
+      fly.current = null;
+    }
     const s = stateNow(data);
     const k = data.reducedMotion ? 1 : 1 - Math.exp(-delta * ORBIT_EASE);
     orbit.current.yaw += (view.orbit.yaw - orbit.current.yaw) * k;

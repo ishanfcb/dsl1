@@ -31,7 +31,7 @@ const ORDER: Route[] = [{ page: "map" }, { page: "junction", junction: "J1" }];
 
 export function CorridorPage({ route, scenario, onScenario }: {
   route: Exclude<Route, { page: "debug" }>;
-  /** Shown scenario; the parent remounts this page when it changes, so the timeline starts afresh. */
+  /** Shown scenario. Changing it keeps the 3D canvas alive and restarts the timeline. */
   scenario: string;
   onScenario(id: string): void;
 }) {
@@ -48,6 +48,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
     compression: sc.cfg.timeCompression,
     reducedMotion,
     initial: openAt === null ? undefined : entered + openAt,
+    resetKey: scenario,
   });
   useKeyboard({
     onPlayPause: timeline.togglePlay,

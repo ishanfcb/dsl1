@@ -14,6 +14,15 @@ export interface RunResult {
   reachedEnd: boolean;
 }
 
+/** Everything a finished run produced, as plain data, so a run computed in a worker can be rebuilt here. */
+export interface RunRecord {
+  keyframes: SimState[];
+  log: RunLog;
+  duration: number;
+  lastStep: number;
+  result: RunResult;
+}
+
 export function initialState(cfg: SimConfig, seed: number): SimState {
   return {
     step: 0,
@@ -33,23 +42,30 @@ export class Simulation {
   readonly cfg: SimConfig;
   readonly system: boolean;
   readonly seed: number;
-  readonly log: RunLog = { gps: [], events: [] };
+  readonly log: RunLog;
   /** Real seconds covered by the run. */
   readonly duration: number;
   readonly result: RunResult;
 
   private readonly points: SpawnPoint[];
-  private readonly keyframes: SimState[] = [];
+  private readonly keyframes: SimState[];
   private readonly stepsPerKeyframe: number;
   private readonly lastStep: number;
   private cursor: SimState | null = null;
 
-  constructor(cfg: SimConfig, opts: { system: boolean; seed?: number }) {
+  /** Runs the engine, or with `record` rebuilds a run already computed (same cfg, system and seed). */
+  constructor(cfg: SimConfig, opts: { system: boolean; seed?: number; record?: RunRecord }) {
     this.cfg = cfg;
     this.system = opts.system;
     this.seed = opts.seed ?? cfg.seed;
     this.points = spawnPoints(cfg);
     this.stepsPerKeyframe = Math.max(1, Math.round(cfg.keyframeInterval / cfg.dt));
+    if (opts.record) {
+      ({ keyframes: this.keyframes, log: this.log, duration: this.duration, lastStep: this.lastStep, result: this.result } = opts.record);
+      return;
+    }
+    this.keyframes = [];
+    this.log = { gps: [], events: [] };
 
     const s = initialState(cfg, this.seed);
     const maxSteps = Math.ceil(cfg.maxDuration / cfg.dt);
@@ -73,6 +89,10 @@ export class Simulation {
     };
   }
 
+  record(): RunRecord {
+    return { keyframes: this.keyframes, log: this.log, duration: this.duration, lastStep: this.lastStep, result: this.result };
+  }
+
   /**
    * State at the last step at or before real time t. The returned object is reused:
    * it is valid until the next call, and must not be mutated.
@@ -90,10 +110,10 @@ export class Simulation {
   }
 }
 
-/** Same scenario, same seed, with and without the system. */
-export function compare(cfg: SimConfig, seed?: number) {
-  const without = new Simulation(cfg, { system: false, seed });
-  const withSystem = new Simulation(cfg, { system: true, seed });
+/** Same scenario, same seed, with and without the system. Pass `records` to rebuild runs computed elsewhere. */
+export function compare(cfg: SimConfig, seed?: number, records?: { without: RunRecord; withSystem: RunRecord }) {
+  const without = new Simulation(cfg, { system: false, seed, record: records?.without });
+  const withSystem = new Simulation(cfg, { system: true, seed, record: records?.withSystem });
   const a = without.result.travelTime;
   const b = withSystem.result.travelTime;
   return { without, withSystem, timeSaved: a !== null && b !== null ? a - b : null };

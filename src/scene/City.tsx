@@ -1,13 +1,13 @@
 // OSM buildings: one merged mesh of dark boxes and one merged set of thin white edges.
-import { useEffect, useMemo } from "react";
-import { buildCity } from "../geo/buildings";
+// Merged once per corridor (geo/cityCache), so switching city and back does not rebuild them.
+import { useMemo } from "react";
+import { cityOf } from "../geo/cityCache";
 import { scene } from "../styles/tokens";
 import { useSceneData } from "./SceneData";
 
 export function City() {
   const { corridor } = useSceneData();
-  const { solids, edges } = useMemo(() => buildCity(corridor.footprints), [corridor]);
-  useEffect(() => () => { solids.dispose(); edges.dispose(); }, [solids, edges]);
+  const { solids, edges } = useMemo(() => cityOf(corridor), [corridor]);
 
   return (
     <group>

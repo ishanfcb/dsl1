@@ -12,6 +12,8 @@ export interface TimelineOptions {
   reducedMotion: boolean;
   /** Where to open (engine seconds). Defaults to `start`. */
   initial?: number;
+  /** When this changes (a new city), jump back to `start` instead of keeping the moment. */
+  resetKey?: unknown;
 }
 
 const IDLE_MS = 8000;
@@ -27,7 +29,7 @@ export interface Timeline {
   togglePlay(): void;
 }
 
-export function useTimeline({ start, end, compression, reducedMotion, initial }: TimelineOptions): Timeline {
+export function useTimeline({ start, end, compression, reducedMotion, initial, resetKey }: TimelineOptions): Timeline {
   const target = useMotionValue(initial ?? start);
   const spring = useSpring(target, { stiffness: 140, damping: 32, restDelta: 0.001 });
   const time = reducedMotion ? target : spring;
@@ -46,6 +48,14 @@ export function useTimeline({ start, end, compression, reducedMotion, initial }:
   useEffect(() => {
     target.set(Math.min(end, Math.max(start, target.get())));
   }, [start, end, target]);
+
+  const lastReset = useRef(resetKey);
+  useEffect(() => {
+    if (lastReset.current === resetKey) return;
+    lastReset.current = resetKey;
+    target.jump(range.current.start);
+    spring.jump(range.current.start);
+  }, [resetKey, target, spring]);
 
   useEffect(() => {
     const clamp = (t: number) => Math.min(range.current.end, Math.max(range.current.start, t));
