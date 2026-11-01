@@ -1,5 +1,5 @@
-// Top of the left panel: the pages as one segmented row (CLAUDE.md §6).
-const PAGES = ["Scenarios", "Map", "Junction", "Driver", "System", "Impact"] as const;
+// Top of the left panel: the pages as one segmented row (CLAUDE.md §6). Only the built pages are listed.
+const PAGES = ["Map", "Junction"] as const;
 export type Page = (typeof PAGES)[number];
 
 export function Masthead({ active }: { active: Page }) {

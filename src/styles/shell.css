@@ -18,7 +18,8 @@
   --fs-s: clamp(12px, 0.78vw, 15px);
   --fs-m: clamp(14px, 0.94vw, 18px);
   --fs-l: clamp(24px, 2vw, 40px);
-  --fs-xl: clamp(24px, 1.9vw, 38px);
+  /* Sized so the longest title, "Junction close-up", fits the panel on one line at 1280 and 1920 wide. */
+  --fs-xl: clamp(22px, 1.65vw, 32px);
   --signal-red: #e5484d;
   --signal-amber: #f2b705;
   --signal-green: #3fb950;
@@ -73,8 +74,7 @@ body {
 }
 /* The pages as one segmented row: a single track, the active page a light pill. */
 .nav {
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
   gap: 2px;
   list-style: none;
   margin: 0;
@@ -83,12 +83,9 @@ body {
   background: var(--chip);
   white-space: nowrap;
 }
-.nav li {
-  flex: 1 1 auto;
-}
 .nav a {
   display: block;
-  padding: 6px 0 7px;
+  padding: 6px 18px 7px;
   border-radius: 999px;
   color: var(--muted);
   font-size: clamp(10px, 0.64vw, 13px);
@@ -111,9 +108,10 @@ body {
   margin: 0 0 20px;
   font-size: var(--fs-xl);
   font-weight: 300;
-  line-height: 0.98;
+  line-height: 1.05;
   letter-spacing: -0.01em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 /* Scenario facts as a small spec line: muted label above each value. */
 .meta {
@@ -123,9 +121,6 @@ body {
 }
 .meta dt {
   margin-bottom: 3px;
-  font-size: var(--fs-xs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 .meta dd {
@@ -215,9 +210,13 @@ body {
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
-.saved__unit {
-  margin-left: 0.3em;
+.saved__estimate {
+  margin-left: 0.6em;
+  font-size: var(--fs-s);
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--muted);
+  vertical-align: 0.6em;
 }
 .clock {
   font-size: var(--fs-xs);

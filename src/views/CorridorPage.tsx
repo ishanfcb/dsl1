@@ -80,7 +80,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
 
         <div className="panel__body">
           <header className="intro">
-            <h2 className="title">{focus ? <>Junction<br />close-up</> : <>Corridor<br />overview</>}</h2>
+            <h2 className="title">{focus ? "Junction close-up" : "Corridor overview"}</h2>
             <dl className="meta">
               <div><dt>Place</dt><dd>{sc.place}</dd></div>
               <div><dt>When</dt><dd>{sc.dayTime}</dd></div>
@@ -93,8 +93,9 @@ export function CorridorPage({ route, scenario, onScenario }: {
 
           <Section label="Time saved">
             <div className="saved">
-              {sc.runs.timeSaved === null ? "No result" : formatMinSec(sc.runs.timeSaved)}
-              <span className="saved__unit">{sc.runs.timeSaved !== null && sc.runs.timeSaved < 0 ? "slower" : "faster"}</span>
+              {/* The label says "time saved"; a run where the system loses time shows as negative. */}
+              {sc.runs.timeSaved === null ? "No result" : `${sc.runs.timeSaved < 0 ? "−" : ""}${formatMinSec(sc.runs.timeSaved)}`}
+              <span className="saved__estimate">*estimated</span>
             </div>
             <div className="row">
               <div className="toggle" role="group" aria-label="System">
@@ -105,7 +106,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
             </div>
             <RunChart without={sc.marks.without} withSystem={sc.marks.with} system={system} now={t - entered} />
             <p className="note">
-              Engine, same seed. Ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> with the system, <DataBadge node={sc.ambulanceWithout} unit="km/h" /> without.
+              *Estimated by the simulation: same traffic, same seed, run with and without the system. Ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> with the system, <DataBadge node={sc.ambulanceWithout} unit="km/h" /> without.
             </p>
           </Section>
 
