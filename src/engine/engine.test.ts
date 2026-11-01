@@ -141,7 +141,8 @@ describe("outcomes", () => {
     const dist = cfg.junctions.J2.centreX + cfg.junctions.J2.boxDepth / 2 + cfg.ambulance.length;
     const kmh = (dist / wo) * 3.6;
     expect(kmh).toBeLessThanOrEqual(4.8 * 1.01);
-    expect(kmh).toBeGreaterThan(3);
+    // Signal waits pull the average below traffic speed; with the 405 m OSM J1→J2 the 285 s Silk Board cycle weighs more.
+    expect(kmh).toBeGreaterThan(2.5);
   });
 
   test("GPS packets every 1.5 s while the ambulance is on screen", () => {

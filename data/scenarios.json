@@ -138,7 +138,7 @@
     },
     "simulation": {
       "dt_s": { "value": 0.2, "unit": "s", "kind": "assumption", "note": "Engine step. 1.6 s and 3 s are exact multiples." },
-      "warmUp_cycles": { "value": 1, "kind": "assumption", "note": "Ambulance enters after one full cycle of J1, so queues have formed. Both modes use the same warm-up." },
+      "warmUp_cycles": { "value": 3, "kind": "assumption", "note": "Ambulance enters after three full cycles of J1. One cycle (150 s at Gurugram) is shorter than the time traffic takes to fill the 1 km approach, so queues had not formed. Both modes use the same warm-up." },
       "maxDuration_s": { "value": 7200, "unit": "s", "kind": "assumption", "note": "Safety stop. A run that hits it reports that the ambulance did not get through." },
       "keyframeInterval_s": { "value": 20, "unit": "s", "kind": "assumption", "note": "Snapshot spacing for scrubbing; seeking replays from the nearest one. No effect on results." },
       "seed": { "value": 1, "kind": "assumption", "note": "Default random seed. With and without system share it." }
@@ -194,7 +194,7 @@
       "id": "gurugram-monday-peak",
       "title": "Monday 6 pm peak — Gurugram, NH-48 → Sohna Road towards Medanta",
       "junctions": { "J1": "Rajiv Chowk (verify it is still signalised at grade)", "J2": "Subhash Chowk", "destination": "Medanta, Sector 38" },
-      "display": { "place": "Gurugram", "dayTime": "Monday 18:00", "speed": { "ref": "corridorSpeed_kmh" } },
+      "display": { "place": "Gurugram", "city": "Gurgaon", "dayTime": "Monday 18:00", "conditions": "evening peak", "speed": { "ref": "corridorSpeed_kmh" } },
       "corridorSpeed_kmh": { "value": 18.9, "src": "S3", "kind": "proxy", "note": "TomTom New Delhi metro, evening rush. TomTom has no separate Gurugram index." },
       "congestionAt6pm": { "value": 1.92, "src": "S3", "kind": "proxy", "note": "192% extra travel time vs free flow" },
       "freeFlowSpeed_kmh": { "value": 40, "src": "S3", "kind": "derived", "note": "24 min per 10 km / 1.602" },
@@ -203,7 +203,7 @@
         "cycle_s": { "value": 150, "kind": "assumption", "note": "no public timing for these junctions. Time 5 cycles from a video or on site." },
         "approachWidth_m": { "value": 10.5, "kind": "assumption", "note": "3 lanes x 3.5 m. Measure on Maps." },
         "saturationFlow_pcuPerHr": { "value": 5512, "src": "S11", "kind": "derived", "note": "525 x 10.5" },
-        "volumeToCapacity": { "value": 0.95, "kind": "assumption", "note": "near capacity at peak" }
+        "volumeToCapacity": { "value": 1.05, "kind": "assumption", "note": "Demand just over capacity at the 6 pm peak, so queues grow from cycle to cycle instead of clearing. No count exists for these junctions; TomTom puts the evening rush at 192% extra travel time (S3, congestionAt6pm), which an undersaturated v/c of 0.95 did not show. Was 0.95. Replace with a junction count when one is found." }
       },
       "vehicleMix": { "value": "use bengaluru mix with car share +10 pts", "kind": "assumption", "note": "no Gurugram on-road data found. Superseded by global.vehicleMix_onRoad.gurugram (sim.vehicleMix)." },
       "ambulanceBaseline_noSystem_kmh": { "value": 18.9, "kind": "derived", "note": "stuck at traffic speed" },
@@ -273,7 +273,8 @@
     {
       "id": "bengaluru-heavy-rain",
       "title": "Heavy rain, evening — Bengaluru, Silk Board → Hosur Road",
-      "junctions": { "J1": "Silk Board Junction", "J2": "Next signal towards Madiwala / St John's Hospital (verify)" },
+      "junctions": { "J1": "Silk Board Junction", "J2": "Next signal towards Madiwala / St John's Hospital (verify)", "destination": "St John's Hospital (verify: read from junctions.J2)" },
+      "display": { "place": "Bengaluru", "city": "Bangalore", "dayTime": "Evening, heavy rain", "conditions": "heavy evening rain", "speed": { "ref": "corridorSpeed_rain_kmh" } },
       "corridorSpeed_dry_kmh": { "value": 13.2, "src": "S1", "kind": "sourced", "note": "TomTom Bengaluru evening peak, 2025" },
       "silkBoardPeakSpeed_kmh": { "value": 4.48, "src": "S6", "kind": "sourced", "note": "2017 CTSTP study, lowest in the city" },
       "corridorSpeed_rain_kmh": { "value": 4.8, "src": "S2", "kind": "sourced", "note": "ORR after ~2 h of rain. One observed event." },
@@ -309,7 +310,20 @@
       },
       "geometry": {
         "_readme": "Arms are named by role relative to the ambulance: in (it arrives on this arm), out (it leaves on this arm), left, right. 'name' maps a role to a real arm where a source names it. Lane counts are inbound lanes; outbound assumed equal.",
-        "j1ToJ2_m": { "value": 1000, "unit": "m", "kind": "assumption", "note": "Placeholder, not measured. J2 itself is not confirmed yet (see junctions.J2). Measure along Hosur Road on Maps or OSM." },
+        "j1ToJ2_m": { "value": 405, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (404.5 m), replacing the 1000 m placeholder. Real map distance, but on the Indiranagar stand-in corridor (see geometry.osm.coverage), not Silk Board -> the next Hosur Road signal." },
+        "osm": {
+          "_readme": "Where src/geo puts the engine's straight route on the map. Way ids are from the export in /data/osm (S20). routeWay and opposingWay list the pieces of one carriageway in travel order.",
+          "file": "bengaluru.geojson",
+          "coverage": { "value": "stand-in corridor", "src": "S20", "kind": "assumption", "note": "The export covers Indiranagar around 100 Feet Road and 12th Main (about 1.6 km square). It has no Hosur Road and nothing at Silk Board, so J1 and J2 sit on 100 Feet Road's two non-residential crossings and keep the Silk Board scenario's names, volumes and timings. Re-export Silk Board -> Hosur Road (12.903,77.610,12.932,77.638), then update these way ids and j1ToJ2_m." },
+          "routeWay": { "value": ["way/27227507", "way/543470376", "way/1151934209", "way/543470389"], "src": "S20", "kind": "assumption", "note": "100 Feet Road southbound carriageway, one-way, lanes=2 in OSM (the scenario's 5 effective lanes are kept). The only direction with mapped road past J2. Only about 500 m is mapped before J1; the rest of the 1000 m approach is drawn straight on beyond the edge of the export, where there are no buildings." },
+          "opposingWay": { "value": ["way/464465173", "way/1227746103", "way/1151934207", "way/543470379", "way/543470383"], "src": "S20", "kind": "assumption", "note": "100 Feet Road northbound carriageway. Carries the inbound traffic of J1.out and J2.out." },
+          "junctionWays": {
+            "J1": { "value": ["way/1458276064"], "src": "S20", "kind": "assumption", "note": "6th Main Road where it crosses 100 Feet Road from the east. In OSM the west side is offset about 50 m (way/59358833), so this is closer to a T; cross arms are drawn straight through." },
+            "J2": { "value": ["way/691155644", "way/24403280"], "src": "S20", "kind": "assumption", "note": "12th Main Road, both carriageways east of 100 Feet Road. J2 centre = midpoint of where they meet routeWay." }
+          },
+          "crossArms": { "value": "perpendicular to the route, left of centre", "kind": "assumption", "note": "As Gurugram: cross-arm traffic is drawn on straight lines at right angles to the route. Each direction keeps to the left." },
+          "j1ToJ2Tolerance_m": { "value": 2, "unit": "m", "kind": "assumption", "note": "src/geo refuses to draw if the OSM J1 -> J2 length differs from j1ToJ2_m by more than this." }
+        },
         "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "Same lane width the Gurugram approachWidth note uses (3 x 3.5 m)." },
         "lanesPerApproach": {
           "J1": {

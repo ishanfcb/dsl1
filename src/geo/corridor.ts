@@ -34,8 +34,26 @@ export interface Corridor {
   pose(segment: SegmentId, x: number, lane: number): Pose;
 }
 
-const str = (ctx: Lookup, path: string) => (at(ctx, path) as { value: string }).value;
 const list = (ctx: Lookup, path: string) => (at(ctx, path) as { value: string[] }).value;
+/** One way id, or several that join end to end (a carriageway OSM splits into pieces). */
+const ways = (ctx: Lookup, path: string) => {
+  const v = (at(ctx, path) as { value: string | string[] }).value;
+  return typeof v === "string" ? [v] : v;
+};
+
+/** Joins ways in the order given into one carriageway. Each must start where the previous one ends. */
+function chainWays(osm: OsmData, ids: string[]): LonLat[] {
+  const pts: LonLat[] = [];
+  for (const id of ids) {
+    const w = osm.way(id).pts;
+    if (pts.length) {
+      const [a, b] = [pts[pts.length - 1], w[0]];
+      if (a[0] !== b[0] || a[1] !== b[1]) throw new Error(`OSM way ${id} does not start where the previous way ends`);
+    }
+    pts.push(...(pts.length ? w.slice(1) : w));
+  }
+  return pts;
+}
 
 function junctionArcLength(osm: OsmData, route: Polyline, project: Projection, wayIds: string[]): number {
   const hits = wayIds.map((id) => {
@@ -55,26 +73,26 @@ export function buildCorridor(root: unknown, scenarioId: string, cfg: SimConfig,
   const ctx: Lookup = { root: rootNode, scenario: scenarioById(rootNode, scenarioId) };
   const o = "geometry.osm";
   const osm = parseOsm(osmText);
-  const routeWay = osm.way(str(ctx, `${o}.routeWay`));
-  const opposingWay = osm.way(str(ctx, `${o}.opposingWay`));
+  const routePts = chainWays(osm, ways(ctx, `${o}.routeWay`));
+  const opposingPts = chainWays(osm, ways(ctx, `${o}.opposingWay`));
   const jWays = Object.fromEntries(JUNCTIONS.map((j) => [j, list(ctx, `${o}.junctionWays.${j}`)])) as Record<JunctionId, string[]>;
 
   // Two passes: find the junctions, then centre the projection between them.
   const locate = (project: Projection) => {
-    const route = new Polyline(routeWay.pts.map(project));
+    const route = new Polyline(routePts.map(project));
     const junctionS = Object.fromEntries(
       JUNCTIONS.map((j) => [j, junctionArcLength(osm, route, project, jWays[j])]),
     ) as Record<JunctionId, number>;
     return { route, junctionS };
   };
-  const first = makeProjection(routeWay.pts[0]);
+  const first = makeProjection(routePts[0]);
   const draft = locate(first);
   const a = draft.route.at(draft.junctionS.J1).p;
   const b = draft.route.at(draft.junctionS.J2).p;
   const centre: LonLat = first.invert([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
   const project = makeProjection(centre);
   const { route, junctionS } = locate(project);
-  const opposing = new Polyline(opposingWay.pts.map(project));
+  const opposing = new Polyline(opposingPts.map(project));
   const junctionXY = { J1: route.at(junctionS.J1).p, J2: route.at(junctionS.J2).p };
 
   // Engine and map must agree on J1 → J2 (CLAUDE.md §8). Never stretch the drawing.

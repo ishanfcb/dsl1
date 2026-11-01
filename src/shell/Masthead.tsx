@@ -1,11 +1,10 @@
-// Top of the left panel: the wordmark and the pages as small pills (CLAUDE.md §6).
+// Top of the left panel: the pages as one segmented row (CLAUDE.md §6).
 const PAGES = ["Scenarios", "Map", "Junction", "Driver", "System", "Impact"] as const;
 export type Page = (typeof PAGES)[number];
 
 export function Masthead({ active }: { active: Page }) {
   return (
     <header className="masthead">
-      <h1 className="wordmark">Emergency Enroute</h1>
       <nav aria-label="Pages">
         <ul className="nav">
           {PAGES.map((p) => (

@@ -8,10 +8,12 @@ export interface SceneView {
   focus: JunctionId | null;
   /** 0 = Map overview, 1 = close on that junction. Eased with the camera move. */
   closeness: Record<JunctionId, number>;
+  /** Viewer's drag: turn around the look point and change of tilt (rad), added to the camera's set bearing. */
+  orbit: { yaw: number; tilt: number };
 }
 
 export function createView(): SceneView {
-  return { focus: null, closeness: { J1: 0, J2: 0 } };
+  return { focus: null, closeness: { J1: 0, J2: 0 }, orbit: { yaw: 0, tilt: 0 } };
 }
 
 export const SceneViewContext = createContext<SceneView | null>(null);

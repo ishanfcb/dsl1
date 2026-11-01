@@ -5,11 +5,22 @@ import data from "@data/scenarios.json";
 import { buildConfig, compare, JUNCTIONS, type JunctionId } from "../engine";
 import { at, deref, num, obj, scenarioById } from "../engine/data";
 import { buildCorridor, osmFileFor } from "../geo/corridor";
-import { runMarks } from "../components/PhaseTimeline";
+import { runMarks } from "../components/runMarks";
 import type { DataNode } from "../components/DataBadge";
 import { junctionName } from "../components/junctionText";
 
 const osmFiles = import.meta.glob("/data/osm/*.geojson", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+
+/** Cities the page can show, in toggle order. A city is selectable once its OSM export is in /data/osm. */
+export const CITIES = [
+  { id: "gurugram-monday-peak" },
+  { id: "bengaluru-heavy-rain" },
+].map(({ id }) => {
+  const root = data as unknown as Record<string, unknown>;
+  const scenario = scenarioById(root, id) as { display?: { city?: string }; geometry?: { osm?: { file?: string } } };
+  const file = scenario.geometry?.osm?.file;
+  return { id, label: scenario.display?.city ?? id, ready: !!file && `/data/osm/${file}` in osmFiles };
+});
 
 export function useScenario(id: string) {
   return useMemo(() => {
@@ -19,7 +30,7 @@ export function useScenario(id: string) {
     const cfg = buildConfig(data, id);
     const runs = compare(cfg);
     const corridor = buildCorridor(data, id, cfg, osmFiles[`/data/osm/${osmFileFor(data, id)}`]);
-    const display = at(ctx, "display") as { place: string; dayTime: string };
+    const display = at(ctx, "display") as { place: string; dayTime: string; conditions: string };
     return {
       cfg,
       runs,
@@ -27,6 +38,7 @@ export function useScenario(id: string) {
       corridor,
       place: display.place,
       dayTime: display.dayTime,
+      conditions: display.conditions,
       speed: at(ctx, "display.speed") as DataNode,
       ambulanceWith: at(ctx, "ambulanceWithSystem_kmh") as DataNode,
       ambulanceWithout: at(ctx, "ambulanceBaseline_noSystem_kmh") as DataNode,
@@ -35,7 +47,7 @@ export function useScenario(id: string) {
       cycle: Object.fromEntries(JUNCTIONS.map((j) => [j, deref(ctx, obj(ctx, `sim.signalPlan.${j}`).cycle_s)])) as Record<JunctionId, DataNode>,
       queuedBelow: at(ctx, "global.queue.queuedBelow_kmh") as DataNode,
       queuedBelowMs: num(ctx, "global.queue.queuedBelow_kmh") / 3.6,
-      destination: (scenario.junctions?.destination ?? "hospital").split(",")[0],
+      destination: (scenario.junctions?.destination ?? "hospital").split(",")[0].replace(/\s*\(.*\)\s*$/, ""),
       names: Object.fromEntries(JUNCTIONS.map((j) => [j, junctionName(scenario, j)])) as Record<JunctionId, string>,
     };
   }, [id]);

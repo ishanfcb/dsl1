@@ -1,4 +1,4 @@
-// Side caption for the Junction page: the junction's name and state, where it is in its signal cycle,
+// Panel text for the Junction page: the junction's state, where it is in its signal cycle,
 // and each approach's light and queue, all read from the engine at the current time.
 import { blue, junctionQueues, lights, ROLES, type JunctionId, type Light, type Role, type SimConfig, type SimState } from "../engine";
 import { DataBadge, type DataNode } from "./DataBadge";
@@ -11,11 +11,10 @@ const ROLE_TEXT: Record<Role, string> = {
   right: "From right",
 };
 
-export function JunctionDetail({ cfg, state, junction, name, cycle, queuedBelow, queuedBelowMs }: {
+export function JunctionDetail({ cfg, state, junction, cycle, queuedBelow, queuedBelowMs }: {
   cfg: SimConfig;
   state: Readonly<SimState>;
   junction: JunctionId;
-  name: string;
   cycle: DataNode;
   queuedBelow: DataNode;
   queuedBelowMs: number;
@@ -29,7 +28,6 @@ export function JunctionDetail({ cfg, state, junction, name, cycle, queuedBelow,
 
   return (
     <div className="detail">
-      <div className="detail__name">{junction} · {name}</div>
       <div className="detail__state">
         <span className={`lamp lamp--${blue(c)}`} aria-hidden="true" />
         {STATE_TEXT[c.state]}

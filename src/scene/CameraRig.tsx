@@ -1,12 +1,14 @@
 // The one camera. Map: tilted ~55° from vertical at a fixed three-quarter bearing, easing after the ambulance.
 // Junction: lower and close over one junction, on the same bearing, so the city never spins.
 // Changing position is a 2 s eased move from wherever the camera is; with reduced motion it cuts.
+// The viewer can drag to turn and tilt the camera around its look point (useOrbitDrag); the turn is eased.
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { JUNCTIONS, type JunctionId } from "../engine";
 import { stateNow, useSceneData } from "./SceneData";
 import { useSceneView } from "./View";
+import { useOrbitDrag } from "./useOrbitDrag";
 import { ambulanceOf } from "./vehiclePose";
 import { toWorld } from "./world";
 
@@ -23,6 +25,8 @@ const LOOK_AHEAD_MAX = 230;
 const FOLLOW = 1.6;
 /** Length of a move between Map and Junction (wall seconds). */
 const FLY_S = 2;
+/** Exponential rate at which the camera catches up with the viewer's drag (1/s). */
+const ORBIT_EASE = 10;
 
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2);
 
@@ -45,23 +49,27 @@ export function CameraRig() {
   const targetPos = useMemo(() => new Vector3(), []);
   const targetLook = useMemo(() => new Vector3(), []);
 
-  /** Camera offsets from the point it looks at, both on one bearing: behind the direction of travel, rotated sideways. */
-  const offsets = useMemo(() => {
+  /** Direction from the look point back to the camera on the ground: behind the direction of travel, rotated sideways. */
+  const bearing = useMemo(() => {
     const { J1, J2 } = data.corridor.junctionXY;
-    const len = Math.hypot(J2[0] - J1[0], J2[1] - J1[1]);
-    const d: [number, number] = [(J2[0] - J1[0]) / len, (J2[1] - J1[1]) / len];
-    const c = Math.cos(SIDE_ANGLE);
-    const s = Math.sin(SIDE_ANGLE);
-    const back: [number, number] = [-(d[0] * c - d[1] * s), -(d[0] * s + d[1] * c)];
-    const at = (distance: number, tilt: number) => {
-      const horizontal = distance * Math.sin(tilt);
-      return new Vector3(back[0] * horizontal, distance * Math.cos(tilt), -back[1] * horizontal);
-    };
-    return { map: at(MAP_DISTANCE, MAP_TILT), junction: at(JUNCTION_DISTANCE, JUNCTION_TILT) };
+    return Math.atan2(J2[1] - J1[1], J2[0] - J1[0]) + Math.PI + SIDE_ANGLE;
   }, [data.corridor]);
+  const orbit = useRef({ yaw: 0, tilt: 0 });
+  const offset = useMemo(() => new Vector3(), []);
+  /** Camera offset from the point it looks at, for a distance and tilt from vertical, on the eased bearing. */
+  const at = (distance: number, tilt: number, out: Vector3) => {
+    const a = bearing + orbit.current.yaw;
+    const t = Math.min(Math.PI / 2 - 0.05, Math.max(0.1, tilt + orbit.current.tilt));
+    const horizontal = distance * Math.sin(t);
+    return out.set(Math.cos(a) * horizontal, distance * Math.cos(t), -Math.sin(a) * horizontal);
+  };
+  useOrbitDrag(view);
 
   useFrame((_, delta) => {
     const s = stateNow(data);
+    const k = data.reducedMotion ? 1 : 1 - Math.exp(-delta * ORBIT_EASE);
+    orbit.current.yaw += (view.orbit.yaw - orbit.current.yaw) * k;
+    orbit.current.tilt += (view.orbit.tilt - orbit.current.tilt) * k;
     const { cfg, corridor } = data;
 
     // Map look point: halfway to the next junction (within limits), so the signal ahead stays in view.
@@ -77,7 +85,7 @@ export function CameraRig() {
     const focus = view.focus;
     if (focus) toWorld(corridor.junctionXY[focus], 0, targetLook);
     else targetLook.copy(follow.current);
-    targetPos.copy(targetLook).add(focus ? offsets.junction : offsets.map);
+    targetPos.copy(targetLook).add(focus ? at(JUNCTION_DISTANCE, JUNCTION_TILT, offset) : at(MAP_DISTANCE, MAP_TILT, offset));
 
     const now = performance.now();
     if (!fly.current || fly.current.focus !== focus) {

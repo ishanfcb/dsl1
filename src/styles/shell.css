@@ -18,7 +18,7 @@
   --fs-s: clamp(12px, 0.78vw, 15px);
   --fs-m: clamp(14px, 0.94vw, 18px);
   --fs-l: clamp(24px, 2vw, 40px);
-  --fs-xl: clamp(30px, 2.7vw, 54px);
+  --fs-xl: clamp(24px, 1.9vw, 38px);
   --signal-red: #e5484d;
   --signal-amber: #f2b705;
   --signal-green: #3fb950;
@@ -69,35 +69,30 @@ body {
 }
 
 .masthead {
-  display: grid;
-  gap: 14px;
   padding: var(--pad) var(--pad) 0;
 }
-.wordmark {
-  margin: 0;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
+/* The pages as one segmented row: a single track, the active page a light pill. */
 .nav {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 2px;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--chip);
+  white-space: nowrap;
+}
+.nav li {
+  flex: 1 1 auto;
 }
 .nav a {
   display: block;
-  padding: 5px 11px 6px;
+  padding: 6px 0 7px;
   border-radius: 999px;
-  background: var(--chip);
   color: var(--muted);
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: clamp(10px, 0.64vw, 13px);
+  text-align: center;
   text-decoration: none;
   transition: background-color 0.2s, color 0.2s;
 }
@@ -113,28 +108,29 @@ body {
   padding: clamp(24px, 4vh, 56px) 0 var(--pad);
 }
 .title {
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   font-size: var(--fs-xl);
   font-weight: 300;
   line-height: 0.98;
   letter-spacing: -0.01em;
   text-transform: uppercase;
 }
-.chips {
+/* Scenario facts as a small spec line: muted label above each value. */
+.meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 18px;
+  gap: clamp(18px, 1.8vw, 36px);
+  margin: 0 0 18px;
 }
-.chip {
-  display: inline-block;
-  padding: 4px 10px 5px;
-  border-radius: 999px;
-  background: var(--chip);
+.meta dt {
+  margin-bottom: 3px;
   font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  white-space: nowrap;
+  color: var(--muted);
+}
+.meta dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
 .story {
   margin: 0;
@@ -212,59 +208,74 @@ body {
 }
 
 /* ---- time saved ---- */
-.saved__value {
+.saved {
   font-size: var(--fs-l);
   font-weight: 300;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
-.saved__src {
-  margin-top: 8px;
+.saved__unit {
+  margin-left: 0.3em;
+  color: var(--muted);
+}
+.clock {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.clock__value {
+  margin-right: 0.3em;
+  font-size: var(--fs-s);
+  letter-spacing: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.note {
+  margin: 0;
   font-size: var(--fs-xs);
   line-height: 1.5;
   color: var(--muted);
 }
 
-/* ---- phase timeline ---- */
-.timeline {
+/* ---- journey time bars ---- */
+.run {
   display: block;
+  margin: 4px 0;
   overflow: visible;
   font-family: var(--sans);
+}
+.run__name,
+.run__end {
   font-size: var(--fs-s);
-}
-.timeline line {
-  stroke: var(--text);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-.timeline__other line {
-  stroke: var(--muted);
-  stroke-opacity: 0.6;
-}
-.timeline__other .timeline__row {
   fill: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
-.timeline__row,
-.timeline__phase {
-  font-size: calc(var(--fs-s) * 0.85);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.run__row--current .run__name,
+.run__row--current .run__end {
   fill: var(--text);
 }
-.timeline__row {
-  font-weight: 500;
+.run__track {
+  fill: rgba(255, 255, 255, 0.16);
 }
-.timeline__phase {
+.run__fill {
+  fill: var(--text);
+}
+.run__tick {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.run__row--current .run__tick {
+  stroke: var(--text);
+}
+.run__junction {
+  font-size: calc(var(--fs-xs) * 0.95);
+  letter-spacing: 0.06em;
   fill: var(--muted);
 }
-.timeline .timeline__leader {
-  stroke: var(--muted);
-  stroke-opacity: 0.5;
-}
-.timeline .timeline__now {
-  stroke: var(--blue);
-  stroke-width: 3;
+.run__head {
+  fill: var(--blue);
 }
 
 /* ---- junction states (Map) ---- */
@@ -272,21 +283,11 @@ body {
   display: grid;
   gap: 6px;
 }
-.hint {
-  margin: 4px 0 0;
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
 
 /* ---- junction detail (Junction) ---- */
 .detail {
   display: grid;
   gap: 12px;
-}
-.detail__name {
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 .detail__state {
   font-size: calc(var(--fs-l) * 0.8);
@@ -497,4 +498,16 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   font-size: 15px;
+}
+
+/* ---- city switch, bottom right of the visual ---- */
+.city-toggle {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  background: rgba(19, 20, 23, 0.82);
+}
+.toggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }

@@ -54,7 +54,7 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
    - Junction pins carry their labels (§6). Traffic appears as amber ribbons.
    - Beside the visual, in the shell: each junction's state and the GPS packet stream as small uppercase lines.
    - Below it: a 4-frame small-multiples row, one framed frame per phase. Caption: phase name left, real time right.
-   - One toggle in the shell: **Without / With system**.
+   - One toggle in the shell: **Without / With system**. A city switch (Gurgaon / Bangalore) sits at the bottom right of the visual; a city is selectable once its OSM export is in `/data/osm`.
 4. **Junction**: click a pin (or use the nav) and the camera eases down to that junction. It shows the 4 arms with lane lines, a signal head on each approach (R/A/G dots plus the blue light), the middle lane outlined in white dashes, and the real queues as amber ribbons thickening and clearing.
 5. **Driver**: a camera at driver eye height behind one vehicle on the route. The blue light comes on early, amber traffic moves out of the middle lane, the ambulance passes. The siren-only version plays alongside in a second frame, same seed and time.
 6. **System** (how it works): the 3 layers (§1) as a flat diagram in the shell style, with blue data packets moving between them.
@@ -77,7 +77,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
 - Page `#050506`; panel `#131417`; text `#EDEDED`, muted `#8B9097`; faint dividers `rgba(255,255,255,0.1)`.
 - **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight, case and letter-spacing: large light uppercase page title, small medium uppercase tracked section labels, regular body, tabular figures for data. Smooth antialiased text.
 - Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
-- Left panel, top to bottom: wordmark **EMERGENCY ENROUTE** and the nav pills (Scenarios / Map / Junction / Driver / System / Impact); page title; scenario chips; a short story paragraph; then labelled sections with label-left / value-right rows. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
+- Left panel, top to bottom: the nav as one segmented row (Scenarios / Map / Junction / Driver / System / Impact; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
 - All text and data live in the panel. The visual carries only in-scene labels (junction pins) and the OSM credit.
 - No shadows, no gradients, no emoji.
 
@@ -96,7 +96,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
   - a small cyan uppercase line, e.g. `J1 · RAJIV CHOWK`;
   - white text below it, e.g. `ALERT — BLUE BLINKING`.
 - Bottom-left credit in small uppercase: `© OPENSTREETMAP CONTRIBUTORS`.
-- **Camera**: slightly tilted, about 50–60° from vertical. Slow, eased moves only. No spinning, no orbit autoplay. With `prefers-reduced-motion`, cut between views instead of moving.
+- **Camera**: slightly tilted, about 50–60° from vertical. Slow, eased moves only. No spinning, no orbit autoplay. The viewer may drag to turn and tilt (tilt kept 35–70° from vertical); double-click resets. With `prefers-reduced-motion`, cut between views instead of moving.
 - Colour is never the only signal (see dataviz skill). Blink vs steady, labels and icons also carry state. Text stays legible from across a room on a projector.
 
 ## 7. Tech stack

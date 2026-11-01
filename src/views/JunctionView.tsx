@@ -10,7 +10,6 @@ export function JunctionSide({ sc, state, junction }: { sc: ScenarioView; state:
       cfg={sc.cfg}
       state={state}
       junction={junction}
-      name={sc.names[junction]}
       cycle={sc.cycle[junction]}
       queuedBelow={sc.queuedBelow}
       queuedBelowMs={sc.queuedBelowMs}

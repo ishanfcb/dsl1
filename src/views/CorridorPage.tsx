@@ -7,9 +7,8 @@ import { useKeyboard } from "../input/useKeyboard";
 import { useTimeline } from "../input/useTimeline";
 import { CityScene } from "../scene/CityScene";
 import { DataBadge } from "../components/DataBadge";
-import { PhaseTimeline } from "../components/PhaseTimeline";
+import { formatMinSec, RunChart } from "../components/RunChart";
 import { RealTimeClock } from "../components/RealTimeClock";
-import { TimeSaved } from "../components/TimeSaved";
 import { useEngineTime } from "../components/useEngineTime";
 import { Frame } from "../shell/Frame";
 import { Masthead } from "../shell/Masthead";
@@ -17,9 +16,9 @@ import { Section } from "../shell/Section";
 import { hrefOf, type Route } from "../shell/useRoute";
 import { JunctionSide, JunctionStory } from "./JunctionView";
 import { MapSide, MapStory } from "./MapView";
+import { CityToggle } from "./CityToggle";
 import { useScenario } from "./useScenario";
 
-const SCENARIO = "gurugram-monday-peak";
 /** Real seconds shown before the ambulance enters, so the view opens on moving traffic. */
 const LEAD_IN_S = 5;
 
@@ -30,8 +29,13 @@ const openAt = openAtParam === null ? null : Number(openAtParam);
 /** The pages ← → step through, in nav order. */
 const ORDER: Route[] = [{ page: "map" }, { page: "junction", junction: "J1" }];
 
-export function CorridorPage({ route }: { route: Exclude<Route, { page: "debug" }> }) {
-  const sc = useScenario(SCENARIO);
+export function CorridorPage({ route, scenario, onScenario }: {
+  route: Exclude<Route, { page: "debug" }>;
+  /** Shown scenario; the parent remounts this page when it changes, so the timeline starts afresh. */
+  scenario: string;
+  onScenario(id: string): void;
+}) {
+  const sc = useScenario(scenario);
   const reducedMotion = useReducedMotion() ?? false;
   const [system, setSystem] = useState(true);
   const sim = system ? sc.runs.withSystem : sc.runs.without;
@@ -76,42 +80,35 @@ export function CorridorPage({ route }: { route: Exclude<Route, { page: "debug" 
         <div className="panel__body">
           <header className="intro">
             <h2 className="title">{focus ? <>Junction<br />close-up</> : <>Corridor<br />overview</>}</h2>
-            <div className="chips">
-              <span className="chip">{sc.place}</span>
-              <span className="chip">{sc.dayTime}</span>
-              <span className="chip"><DataBadge node={sc.speed} unit="km/h" /></span>
-            </div>
+            <dl className="meta">
+              <div><dt>Place</dt><dd>{sc.place}</dd></div>
+              <div><dt>When</dt><dd>{sc.dayTime}</dd></div>
+              <div><dt>Traffic</dt><dd><DataBadge node={sc.speed} unit="km/h" /></dd></div>
+            </dl>
             <p className="story">
-              {focus ? <JunctionStory sc={sc} junction={focus} /> : <MapStory place={sc.place} destination={sc.destination} />}
+              {focus ? <JunctionStory sc={sc} junction={focus} /> : <MapStory place={sc.place} destination={sc.destination} conditions={sc.conditions} />}
             </p>
           </header>
 
-          <Section label="Playback">
+          <Section label="Time saved">
+            <div className="saved">
+              {sc.runs.timeSaved === null ? "No result" : formatMinSec(sc.runs.timeSaved)}
+              <span className="saved__unit">{sc.runs.timeSaved !== null && sc.runs.timeSaved < 0 ? "slower" : "faster"}</span>
+            </div>
             <div className="row">
-              <span className="row__label">System</span>
               <div className="toggle" role="group" aria-label="System">
                 <button aria-pressed={!system} onClick={() => setSystem(false)}>Without</button>
-                <button aria-pressed={system} onClick={() => setSystem(true)}>With</button>
+                <button aria-pressed={system} onClick={() => setSystem(true)}>With system</button>
               </div>
+              <RealTimeClock elapsed={t - entered} />
             </div>
-            <RealTimeClock elapsed={t - entered} compression={sc.compression} />
+            <RunChart without={sc.marks.without} withSystem={sc.marks.with} system={system} now={t - entered} />
+            <p className="note">
+              Engine, same seed. Ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> with the system, <DataBadge node={sc.ambulanceWithout} unit="km/h" /> without.
+            </p>
           </Section>
 
-          <Section label="Time saved">
-            <TimeSaved
-              seconds={sc.runs.timeSaved}
-              source={<>Engine, same seed · ambulance <DataBadge node={sc.ambulanceWith} unit="km/h" /> vs <DataBadge node={sc.ambulanceWithout} unit="km/h" /></>}
-            />
-            <PhaseTimeline
-              current={system ? sc.marks.with : sc.marks.without}
-              other={system ? sc.marks.without : sc.marks.with}
-              currentLabel={system ? "With" : "Without"}
-              otherLabel={system ? "Without" : "With"}
-              now={t - entered}
-            />
-          </Section>
-
-          <Section label={focus ? "Junction" : "Junctions"}>
+          <Section label={focus ? `${focus} · ${sc.names[focus]}` : "Signals"}>
             <div aria-live="polite">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div key={focus ?? "map"} {...fade}>
@@ -130,6 +127,7 @@ export function CorridorPage({ route }: { route: Exclude<Route, { page: "debug" 
       <main className="stage">
         <Frame credit="© OpenStreetMap contributors">
           <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
+          <CityToggle current={scenario} onChange={onScenario} />
         </Frame>
       </main>
     </div>
