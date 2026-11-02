@@ -430,7 +430,8 @@ body {
 .frame__credit {
   position: absolute;
   left: 18px;
-  bottom: 14px;
+  /* Sits above the Automated / Scroll switch. */
+  bottom: 60px;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -503,6 +504,13 @@ body {
 .city-toggle {
   position: absolute;
   right: 16px;
+  bottom: 14px;
+  background: rgba(19, 20, 23, 0.82);
+}
+/* ---- Automated / Scroll switch, bottom left of the visual ---- */
+.mode-toggle {
+  position: absolute;
+  left: 16px;
   bottom: 14px;
   background: rgba(19, 20, 23, 0.82);
 }

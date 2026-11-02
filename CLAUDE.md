@@ -64,9 +64,10 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
 
 ## 5. Interaction model
 
-- **Mouse moved or scroll** → scroll controls timeline progress (smoothed with a spring). Scroll is the scrubber.
-- **8 s idle** → autoplay loops the current scenario. Any input takes back control instantly.
-- Keyboard (for presenting): ← → move between pages, Space play/pause, 1–4 pick a scenario, `S` toggles the system on/off.
+- Two explicit modes, switched only by the **Automated / Scroll** toggle at the bottom left of the visual (or `Shift+Space`). Moving the mouse or touching the trackpad never changes mode.
+- **Automated** (default) → the current scenario plays and loops. Space pauses and resumes.
+- **Scroll** → the scroll wheel scrubs timeline progress (smoothed with a spring). Space switches back to Automated.
+- Keyboard (for presenting): ← → move between pages, Space play/pause, Shift+Space Automated/Scroll, 1–4 pick a scenario, `S` toggles the system on/off.
 - Must work full-screen on a laptop and a projector (1920×1080 and 1280×720). Respect `prefers-reduced-motion`.
 
 ## 6. Visual language

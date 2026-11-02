@@ -20,6 +20,7 @@ import { hrefOf, type Route } from "../shell/useRoute";
 import { JunctionSide, JunctionStory } from "./JunctionView";
 import { MapSide, MapStory } from "./MapView";
 import { CityToggle } from "./CityToggle";
+import { ModeToggle } from "./ModeToggle";
 import { useScenario } from "./useScenario";
 
 /** Real seconds shown before the ambulance enters, so the view opens on moving traffic. */
@@ -55,6 +56,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
   });
   useKeyboard({
     onPlayPause: timeline.togglePlay,
+    onToggleMode: timeline.toggleMode,
     onToggleSystem: () => setSystem((s) => !s),
     onPage: (step) => {
       const i = ORDER.findIndex((r) => r.page === route.page);
@@ -148,6 +150,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
         <Frame credit="© OpenStreetMap contributors">
           <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
           <Narration sc={sc} sim={sim} state={state} reducedMotion={reducedMotion} />
+          <ModeToggle mode={timeline.mode} playing={timeline.playing} onChange={timeline.setMode} />
           <CityToggle current={scenario} onChange={onScenario} />
         </Frame>
       </main>
