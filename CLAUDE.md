@@ -54,7 +54,7 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
 3. **Map (core)**: the corridor in 3D at the tilted overview camera.
    - The ambulance route is a blue dotted stream. Each junction has a translucent blue trigger ring on the ground while it is in ALERT, its radius the ambulance's distance when it triggered.
    - Junction pins carry their labels (§6). Traffic appears as small amber vehicles.
-   - Beside the visual, in the shell: each junction's state and the GPS packet stream as small uppercase lines.
+   - Beside the visual, in the shell: each junction's state and the GPS packet stream as small lines.
    - Below it: a 4-frame small-multiples row, one framed frame per phase. Caption: phase name left, real time right.
    - One toggle in the shell: **Without / With system**. A city switch (Gurgaon / Bangalore) sits at the top of the panel, above the page nav; a city is selectable once its OSM export is in `/data/osm`.
    - A **Sources** toggle (bottom right of the visual, above Automated / Scroll; key `D`) slides a tinted-glass sheet in from the right over the visual, the full height of the map, with the rest of the page dimmed. While it is open, time is held (even on Automated), only `D` and Esc work, focus stays in the sheet, and a click on the dimmed page closes it. It lists every number the scenario runs on, with its kind, source link and note, then every source and what was taken from it. Labels live in `src/components/sourceSheet.ts`; values come from scenarios.json.
@@ -79,7 +79,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
 
 ### App shell (soft panel + visual)
 - Page `#050506`; panel `#131417`; text `#EDEDED`, muted `#8B9097`; faint dividers `rgba(255,255,255,0.1)`.
-- **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight, case and letter-spacing: large light uppercase page title, small medium uppercase tracked section labels, regular body, tabular figures for data. Smooth antialiased text.
+- **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight and colour: large light uppercase page title (the only text in capitals), small muted section labels in sentence case, regular body, tabular figures for data. **No other all-caps anywhere** (labels, toggles, chips, pins, credit): the team finds it hard to read. Smooth antialiased text.
 - Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
 - Left panel, top to bottom: the nav as one segmented row of the built pages (Map / Junction for now; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
 - All other text and data live in the panel. The visual carries only: junction pins, the distance from the ambulance to the next junction (a red dimension line beside the route with the number on the ground), a small frosted-glass narration card top right (what is happening now, two plain lines, from engine state), the Sources and Automated / Scroll toggles (bottom right), the Sources sheet when open, and the OSM credit.
@@ -99,9 +99,9 @@ If anything elsewhere in this file conflicts with this section on colour or styl
   - **Red line** beside the route: the distance from the ambulance to the next junction, with the number lying flat on the ground in the middle of it.
   - Everything else is greys, white and black.
 - **Junction labels** use a pin with a thin vertical leader line, then two lines of text, as in `city-3d.jpg`:
-  - a small cyan uppercase line, e.g. `J1 · RAJIV CHOWK`;
-  - white text below it, e.g. `ALERT — BLUE BLINKING`.
-- Bottom-left credit in small uppercase: `© OPENSTREETMAP CONTRIBUTORS`.
+  - a small cyan line, e.g. `J1 · Rajiv Chowk`;
+  - white text below it, e.g. `Alert — blue blinking`.
+- Bottom-left credit in small type: `© OpenStreetMap contributors`.
 - **Camera**: slightly tilted, about 50–60° from vertical. Slow, eased moves only. No spinning, no orbit autoplay. The viewer may drag to turn and tilt (tilt kept 35–70° from vertical); double-click resets. With `prefers-reduced-motion`, cut between views instead of moving.
 - Colour is never the only signal (see dataviz skill). Blink vs steady, labels and icons also carry state. Text stays legible from across a room on a projector.
 

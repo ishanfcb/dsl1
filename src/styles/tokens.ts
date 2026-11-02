@@ -29,7 +29,7 @@ export const scene = {
   /** Signal heads only (CLAUDE.md §6: small red / amber / green dots). */
   signalRed: "#E5484D",
   signalGreen: "#3FB950",
-  /** Junction label first line (CLAUDE.md §6: small cyan uppercase). */
+  /** Junction label first line (CLAUDE.md §6: small cyan line). */
   labelCyan: "#5BC8F5",
   labelText: "#FFFFFF",
   /** Distance from the ambulance to the next junction: the dimension line beside the route. */

@@ -75,6 +75,11 @@ body {
   gap: 10px;
   padding: var(--pad) var(--pad) 0;
 }
+/* The city is the bigger choice, so its switch is a size up from the page nav under it. */
+.masthead .toggle button {
+  padding: 7px 20px 8px;
+  font-size: var(--fs-s);
+}
 /* The pages as one segmented row: a single track, the active page a light pill. */
 .nav {
   display: inline-flex;
@@ -148,8 +153,7 @@ body {
   margin: 0;
   font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 
@@ -191,8 +195,7 @@ body {
   border-radius: 999px;
   font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
   transition: background-color 0.2s, color 0.2s;
 }
@@ -223,8 +226,7 @@ body {
 }
 .clock {
   font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 .clock__value {
@@ -310,8 +312,7 @@ body {
   color: var(--ground);
   font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   text-decoration: none;
 }
 .arms {
@@ -332,8 +333,7 @@ body {
   border-top: 0;
   font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 .arms tbody th {
@@ -435,8 +435,7 @@ body {
   left: 18px;
   bottom: 14px;
   font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
 }
@@ -493,11 +492,9 @@ body {
 .pin__name {
   font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 .pin__state {
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   font-size: 15px;
 }
@@ -544,8 +541,7 @@ body {
   margin: 0 0 10px;
   font-size: var(--sheet-xs);
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 .sheet__title {
@@ -554,7 +550,6 @@ body {
   font-weight: 300;
   line-height: 1.05;
   letter-spacing: -0.005em;
-  text-transform: uppercase;
 }
 .sheet__close {
   all: unset;
@@ -612,8 +607,7 @@ body {
   margin: 0 0 4px;
   font-size: var(--sheet-s);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--text);
 }
 .sheet__list {
@@ -667,8 +661,7 @@ body {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   font-size: var(--sheet-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: rgba(237, 237, 237, 0.82);
 }
 /* Proxy and assumption carry the same hollow dot as everywhere else on the site. */
@@ -755,8 +748,7 @@ body {
   margin-bottom: 8px;
   font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 .narration__step {
