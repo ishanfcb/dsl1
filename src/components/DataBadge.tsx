@@ -1,5 +1,5 @@
 // A number from scenarios.json with its source id; proxy and assumption values get a hollow dot (CLAUDE.md §2).
-// Hovering it explains the number in plain words, names its source and says what kind of number it is.
+// Hovering it explains the number in plain words, links its source and says what kind of number it is.
 import type { ReactNode } from "react";
 import { Explain } from "./Explain";
 import { SOURCES } from "./sources";
@@ -29,7 +29,17 @@ export function DataBadge({ node, unit, digits = 1, explain }: {
   const source = node.src ? SOURCES[node.src] : undefined;
   const meta = (
     <>
-      {source && <div>{`${source.id} · ${source.title}`}</div>}
+      {source && (
+        <div>
+          {`${source.id} · `}
+          {source.url ? (
+            <a className="tip__src" href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a>
+          ) : (
+            source.title
+          )}
+        </div>
+      )}
+      {source?.note && <div className="tip__note">{source.note}</div>}
       <div>{KIND_TEXT[node.kind]}</div>
       {flagged && node.note && <div className="tip__note">{node.note}</div>}
     </>

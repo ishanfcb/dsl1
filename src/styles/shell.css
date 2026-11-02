@@ -577,7 +577,6 @@ body {
   background: rgba(19, 20, 23, 0.78);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
-  pointer-events: none;
   font-family: var(--sans);
   text-transform: none;
   letter-spacing: 0;
@@ -598,6 +597,17 @@ body {
   font-size: var(--fs-xs);
   line-height: 1.45;
   color: var(--muted);
+}
+/* The source in a hover note: a link to the page it came from. */
+.tip__src {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: rgba(237, 237, 237, 0.35);
+  text-underline-offset: 2px;
+}
+.tip__src:hover,
+.tip__src:focus-visible {
+  text-decoration-color: currentColor;
 }
 .tip__note {
   margin-top: 3px;
