@@ -89,7 +89,7 @@
       "baseline": { "value": 0.25, "kind": "assumption", "note": "Night. Same formula as peak." }
     },
     "turning": {
-      "j1ThroughToJ2": { "value": 0.6, "kind": "assumption", "note": "Share of J1's main-road (in arm) traffic that continues to J2. The other 40% turn off at J1. J1's cross streets do not feed J2, and J2's cross streets are independent." }
+      "j1ThroughToJ2": { "value": 0.6, "kind": "assumption", "note": "Share of J1's main-road (in arm) traffic that continues to J2. The other 40% turn off at J1. J1's cross streets do not feed J2, and J2's cross streets are independent. Used by the Bengaluru scenarios; Gurugram sets its own (sim.j1ThroughShare)." }
     },
     "signalTiming_IRC93": {
       "cycleMin_s": { "value": 40, "src": "S12", "kind": "sourced" },
@@ -194,6 +194,7 @@
           "J1": { "method": "count", "counts": { "ref": "scenarios.bengaluru-heavy-rain.signal_J1_SilkBoard.volume_vehPerHr_byArm" }, "factor": { "ref": "volumeFactor" } },
           "J2": { "method": "vc", "vc": { "ref": "global.volumeToCapacity.baseline" } }
         },
+        "j1ThroughShare": { "ref": "global.turning.j1ThroughToJ2" },
         "waterDepth_mm": null
       },
       "weather": "clear"
@@ -273,6 +274,7 @@
           "J1": { "method": "vc", "vc": { "ref": "signal.volumeToCapacity" } },
           "J2": { "method": "vc", "vc": { "ref": "signal.volumeToCapacity" } }
         },
+        "j1ThroughShare": { "value": 0.75, "kind": "assumption", "note": "Share of the ambulance's road at Rajiv Chowk that carries on to Subhash Chowk; the other 25% turn off. Set by the team: the global 60% (40% turning off) was judged too high for this corridor. No turning count exists; replace with one." },
         "waterDepth_mm": null,
         "_signalNote": "The 'signal' block above (150 s cycle, 10.5 m approach, v/c 0.95) applies to both J1 and J2."
       },
@@ -313,6 +315,7 @@
           "J1": { "method": "count", "counts": { "ref": "signal_J1_SilkBoard.volume_vehPerHr_byArm" } },
           "J2": { "method": "vc", "vc": { "ref": "global.volumeToCapacity.peak" } }
         },
+        "j1ThroughShare": { "ref": "global.turning.j1ThroughToJ2" },
         "waterDepth_mm": { "ref": "waterDepth_mm" },
         "_signalNote": "signal_J2.cycle_s (150 s) matches global.signalPlans.fourPhase150."
       },
@@ -383,6 +386,7 @@
           "J1": { "method": "vc", "vc": { "ref": "scenarios.gurugram-monday-peak.signal.volumeToCapacity" } },
           "J2": { "method": "vc", "vc": { "ref": "scenarios.gurugram-monday-peak.signal.volumeToCapacity" } }
         },
+        "j1ThroughShare": { "ref": "scenarios.gurugram-monday-peak.sim.j1ThroughShare", "note": "Same Rajiv Chowk corridor as the Monday peak." },
         "waterDepth_mm": { "ref": "waterDepth_mm" }
       },
       "weather": "flooding"

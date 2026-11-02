@@ -199,7 +199,7 @@ export function buildConfig(root: unknown, scenarioId: string): SimConfig {
     junctions,
     segments,
     j1FarEdge: x1 + b1 / 2,
-    j1ThroughShare: num(ctx, "global.turning.j1ThroughToJ2"),
+    j1ThroughShare: num(ctx, "sim.j1ThroughShare"),
     signal: { amber, allRed },
     stopLine: {
       pcuPerLaneSecond: (satCoef * laneWidth) / 3600,

@@ -340,7 +340,7 @@
       <li><strong>What kind.</strong> Two-wheelers, cars, autos and buses in a set mix. Bengaluru: 55% / 25% / 12% / 8%. Gurgaon: 40% / 42% / 10% / 8% <span class="ring"></span>. The Bengaluru mix sits between the registered fleet (68% two-wheelers) <a class="src" href="#s7">S7</a> and roadside counts (39–44%) <a class="src" href="#s10">S10</a>.</li>
       <li><strong>How they drive.</strong> Each vehicle speeds up, follows the one in front and brakes using the <strong>Intelligent Driver Model</strong>, a standard traffic model <a class="src" href="#s16">S16</a>. Each gets its own preferred speed, spread around the scenario's traffic speed (two-wheelers 10% faster, buses 15% slower <span class="ring"></span>), so they don't all move in step.</li>
       <li><strong>In groups of 10.</strong> To run in a browser, the simulation moves traffic in groups of 10 vehicles of one type <span class="ring"></span>. A group's spacing is set so it flows like 10 vehicles would. On screen you see the individual vehicles.</li>
-      <li><strong>Turning.</strong> 60% of the traffic on the ambulance's road at J1 carries on to J2; the rest turns off <span class="ring"></span>.</li>
+      <li><strong>Turning.</strong> Of the traffic on the ambulance's road at J1, 75% carries on to J2 in Gurgaon and 60% in Bangalore; the rest turns off <span class="ring"></span>. There is no public turning count for either junction.</li>
     </ul>
 
     <h3 id="signals">The signals</h3>
@@ -399,9 +399,9 @@
       <thead><tr><th>Scenario</th><th class="r">Siren only</th><th class="r">With system</th><th class="r">Saved</th><th>What it shows</th></tr></thead>
       <tbody>
         <tr><td><strong>Bangalore, heavy rain</strong><br>Silk Board → Hosur Road</td><td class="r">32:33</td><td class="r">22:09</td><td class="r"><strong>10 min 24 s</strong></td><td>The main case. A huge junction with a long red for the ambulance's road.</td></tr>
-        <tr><td><strong>Gurgaon, Monday 6 pm</strong><br>Rajiv Chowk → Subhash Chowk</td><td class="r">6:08</td><td class="r">4:55</td><td class="r"><strong>1 min 13 s</strong></td><td>Evening peak. Most of the gain is at the second junction, which the n+1 rule cleared early.</td></tr>
+        <tr><td><strong>Gurgaon, Monday 6 pm</strong><br>Rajiv Chowk → Subhash Chowk</td><td class="r">6:08</td><td class="r">5:08</td><td class="r"><strong>59 s</strong></td><td>Evening peak. Most of the gain is at the second junction, which the n+1 rule cleared early.</td></tr>
         <tr><td><strong>Night, clear</strong><br>Hosur Road</td><td class="r">3:32</td><td class="r">3:32</td><td class="r"><strong>0 s</strong></td><td>The control case. No queues, so nothing to clear and nothing to gain.</td></tr>
-        <tr><td><strong>Gurgaon, waterlogging</strong></td><td class="r">34:09</td><td class="r">31:50</td><td class="r"><strong>2 min 19 s</strong></td><td>The limit case. Water caps everyone at about 5 km/h; the system can't make a flooded road fast.</td></tr>
+        <tr><td><strong>Gurgaon, waterlogging</strong></td><td class="r">34:11</td><td class="r">32:35</td><td class="r"><strong>1 min 36 s</strong></td><td>The limit case. Water caps everyone at about 5 km/h; the system can't make a flooded road fast.</td></tr>
       </tbody>
     </table></div>
     <div class="say"><b>Say it like this</b>The system saves time where there is a queue to clear. At night it saves nothing, and in a flood it helps only a little. That is what we would expect, and it shows the gain comes from the early greens and nothing else.</div>
@@ -441,13 +441,14 @@
       <thead><tr><th>Stretch</th><th class="r">Siren only</th><th class="r">With system</th><th class="r">Saved</th></tr></thead>
       <tbody>
         <tr><td>Start → trigger point</td><td class="r">19.2 s</td><td class="r">10.5 s</td><td class="r">8.7 s</td></tr>
-        <tr><td>Trigger point → through Rajiv Chowk</td><td class="r">178.4 s</td><td class="r">159.5 s</td><td class="r">18.9 s</td></tr>
-        <tr><td>Rajiv Chowk → through Subhash Chowk</td><td class="r">113.8 s</td><td class="r">55.0 s</td><td class="r"><strong>58.8 s</strong></td></tr>
-        <tr><td>Subhash Chowk → end</td><td class="r">56.4 s</td><td class="r">70.0 s</td><td class="r">−13.6 s</td></tr>
-        <tr class="total"><td>Total</td><td class="r">367.8 s</td><td class="r">295.0 s</td><td class="r">72.8 s</td></tr>
+        <tr><td>Trigger point → through Rajiv Chowk</td><td class="r">178.6 s</td><td class="r">159.9 s</td><td class="r">18.7 s</td></tr>
+        <tr><td>Rajiv Chowk → through Subhash Chowk</td><td class="r">113.4 s</td><td class="r">65.8 s</td><td class="r"><strong>47.6 s</strong></td></tr>
+        <tr><td>Subhash Chowk → end</td><td class="r">56.6 s</td><td class="r">72.2 s</td><td class="r">−15.6 s</td></tr>
+        <tr class="total"><td>Total</td><td class="r">367.8 s</td><td class="r">308.4 s</td><td class="r">59.4 s</td></tr>
       </tbody>
     </table></div>
     <p>The biggest gain is at the <strong>second</strong> junction. Subhash Chowk turned green at the same moment as Rajiv Chowk (the n+1 rule), so its queue had cleared by the time the ambulance reached it. This is the clearest example of why warning the next junction matters.</p>
+    <p>On that stretch the ambulance averages about 31 km/h, close to its assumed 35 km/h target, while traffic does 18.9 km/h. The road ahead of it is clear: Subhash Chowk's queue has drained, and 25% of the traffic turned off at Rajiv Chowk <span class="ring"></span>. At 15× playback its speed-up looks abrupt; in real time it takes about 5 s.</p>
 
     <h3 id="maths">The calculations, step by step</h3>
 
@@ -512,12 +513,12 @@ Screen time = real time ÷ 15:  22 min 9 s real ≈ 89 s on screen</div>
 
     <h3 id="questions">Likely questions</h3>
     <details><summary>Is 10 minutes realistic?</summary><div><p>It is a simulation estimate. Just over 9 minutes of it is saved on the approach to Silk Board, where the ambulance's road gets only 45 s of green in a 285 s cycle <a class="src" href="#s5">S5</a>. About 2 minutes comes from our assumption that the ambulance drives faster with the system. Because our ambulance never overtakes, the times in both runs are on the slow side.</p></div></details>
-    <details><summary>Isn't some of the saving just the faster ambulance?</summary><div><p>In Bangalore, 1 min 57 s is, yes: that part happens before any light changes. We say so openly. The remaining 8 min 27 s comes from the signals. In Gurgaon the speed share is 8.7 s of 72.8 s. In the waterlogging case the water caps both runs at the same speed, so all of the 2 min 19 s comes from the signals.</p></div></details>
+    <details><summary>Isn't some of the saving just the faster ambulance?</summary><div><p>In Bangalore, 1 min 57 s is, yes: that part happens before any light changes. We say so openly. The remaining 8 min 27 s comes from the signals. In Gurgaon the speed share is 8.7 s of 59.4 s. In the waterlogging case the water caps both runs at the same speed, so all of the 1 min 36 s comes from the signals.</p></div></details>
     <details><summary>Why does the ambulance only average 4.6 km/h when its target is 24?</summary><div><p>Because it never overtakes. It moves at the speed of the traffic in front of it, which is 4.8 km/h in the rain <a class="src" href="#s2">S2</a>. 24 km/h is the flood-safe ceiling <a class="src" href="#s9">S9</a>, reached only where the road ahead is clear.</p></div></details>
     <details><summary>Why does the night scenario save nothing?</summary><div><p>There is almost no traffic, so there is no queue to clear, and our ambulance ignores red lights in both runs. The system helps only where there is a queue. It is the control case, and it shows we are not inflating results.</p></div></details>
     <details><summary>Where does 760 m come from?</summary><div><p>A real Bengaluru pilot turned signals green when an ambulance was 760 m away <a class="src" href="#s14">S14</a>. We use it as the backup distance and work out the 94.3 s rule from it.</p></div></details>
     <details><summary>Why trigger on time and not just distance?</summary><div><p>A fixed distance holds cross traffic for very different lengths of time: about a minute and a half for a fast ambulance, many minutes for one crawling in a jam. A time rule gives drivers the same warning every time. The distance backup is there because a stuck ambulance's ETA never drops.</p></div></details>
-    <details><summary>Why warn the next junction too?</summary><div><p>Because a queue takes time to drain. If J2 waited until the ambulance passed J1, the ambulance would reach J2's queue before it cleared. In Gurgaon, 58.8 s of the 72.8 s saved is at the second junction.</p></div></details>
+    <details><summary>Why warn the next junction too?</summary><div><p>Because a queue takes time to drain. If J2 waited until the ambulance passed J1, the ambulance would reach J2's queue before it cleared. In Gurgaon, 47.6 s of the 59.4 s saved is at the second junction.</p></div></details>
     <details><summary>Doesn't holding everyone else at red cause new jams?</summary><div><p>Other roads are held only while the ambulance approaches and passes. The junction then goes through amber and all-red and carries on its cycle from where it stopped, so no road loses its turn. We haven't measured the knock-on delay to cross traffic; that would be a good next step.</p></div></details>
     <details><summary>Why speed playback up only 15×?</summary><div><p>So a 285 s Silk Board cycle plays in about 19 s: fast enough to watch, slow enough to follow. Only the clock changes, so relative speeds stay true.</p></div></details>
     <details><summary>Why are the maps not the real junctions?</summary><div><p>Our OpenStreetMap exports cover other parts of each city. The streets are stand-ins; the junction names, traffic counts and signal timings are the real ones. Exporting the real corridors is the next step.</p></div></details>
