@@ -1,7 +1,8 @@
 <title>Emergency Enroute Jury Notes</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-  /* Layout: one reading column with a sticky contents rail on wide screens; tables scroll inside themselves. */
+  /* Layout: one reading column in four parts (concept → prototype → simulation → results), with a sticky
+     contents rail on wide screens. Same palette and type as the prototype: Helvetica, near-black, signal blue. */
   :root {
     --bg: #f4f5f7;
     --surface: #ffffff;
@@ -10,8 +11,12 @@
     --line: rgba(20, 24, 30, 0.12);
     --chip: rgba(20, 24, 30, 0.06);
     --blue: #1f63e0;
+    --blue-soft: rgba(31, 99, 224, 0.14);
     --amber: #a87800;
-    --red: #c2363b;
+    --seg1: #c9ccd2;
+    --seg2: #1f63e0;
+    --seg3: #8f949c;
+    --seg4: #5d636b;
     --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     color-scheme: light;
@@ -20,20 +25,26 @@
     :root:not([data-theme="light"]) {
       --bg: #050506; --surface: #131417; --fg: #ededed; --muted: #8b9097;
       --line: rgba(255, 255, 255, 0.1); --chip: rgba(255, 255, 255, 0.07);
-      --blue: #5b9bff; --amber: #f2b705; --red: #ef6a6e; color-scheme: dark;
+      --blue: #5b9bff; --blue-soft: rgba(91, 155, 255, 0.16); --amber: #f2b705;
+      --seg1: #3a3e45; --seg2: #5b9bff; --seg3: #6b7078; --seg4: #9aa0a8;
+      color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #050506; --surface: #131417; --fg: #ededed; --muted: #8b9097;
     --line: rgba(255, 255, 255, 0.1); --chip: rgba(255, 255, 255, 0.07);
-    --blue: #5b9bff; --amber: #f2b705; --red: #ef6a6e; color-scheme: dark;
+    --blue: #5b9bff; --blue-soft: rgba(91, 155, 255, 0.16); --amber: #f2b705;
+    --seg1: #3a3e45; --seg2: #5b9bff; --seg3: #6b7078; --seg4: #9aa0a8;
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     background: var(--bg);
     color: var(--fg);
-    font: 16px/1.55 var(--sans);
+    font: 16px/1.6 var(--sans);
     -webkit-font-smoothing: antialiased;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -43,80 +54,136 @@
     margin: 0 auto;
     padding-block: 40px 80px;
     display: grid;
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 220px minmax(0, 1fr);
     gap: 48px;
   }
   @media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 24px 56px; } .rail { display: none; } }
 
-  .rail { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); align-self: start; font-size: 13px; }
+  /* Contents rail */
+  .rail { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); align-self: start; font-size: 13px; max-height: calc(100vh - 48px); overflow-y: auto; }
   .rail p { margin: 0 0 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-size: 11px; }
-  .rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .rail ol { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 5px; }
+  .rail .part { color: var(--fg); font-weight: 700; margin-top: 8px; }
   .rail a { color: var(--muted); text-decoration: none; }
-  .rail a:hover, .rail a:focus-visible { color: var(--fg); }
+  .rail .part a { color: var(--fg); }
+  .rail a:hover, .rail a:focus-visible { color: var(--blue); }
 
   main { min-width: 0; }
-  header.top { padding-bottom: 28px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin: 0 0 10px; }
-  h1 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 300; letter-spacing: -.01em; line-height: 1.05; margin: 0 0 14px; text-transform: uppercase; text-wrap: balance; }
-  .lede { font-size: 18px; max-width: 64ch; margin: 0; color: var(--fg); }
-  h2 { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 48px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); }
-  h3 { font-size: 20px; font-weight: 400; margin: 28px 0 10px; text-wrap: balance; }
-  p, li { max-width: 70ch; }
+
+  /* Type scale: 46 / 28 / 20 / 17 / 16 / 14 / 11 */
+  header.top { padding-bottom: 28px; margin-bottom: 8px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); margin: 0 0 10px; }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); font-weight: 300; letter-spacing: -.01em; line-height: 1.05; margin: 0 0 16px; text-transform: uppercase; text-wrap: balance; }
+  .lede { font-size: 18px; max-width: 62ch; margin: 0 0 18px; }
+
+  .partHead { margin: 64px 0 8px; padding-top: 22px; border-top: 2px solid var(--fg); }
+  .partHead .eyebrow { color: var(--muted); }
+  h2 { font-size: 28px; font-weight: 300; text-transform: uppercase; letter-spacing: .01em; line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+  .partHead p { font-size: 17px; color: var(--muted); max-width: 62ch; margin: 0; }
+  h3 { font-size: 20px; font-weight: 400; margin: 40px 0 10px; text-wrap: balance; }
+  h4 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+
+  p, li { max-width: 68ch; }
   p { margin: 0 0 12px; }
   ul, ol { margin: 0 0 14px; padding-left: 20px; }
   li { margin-bottom: 6px; }
   strong { font-weight: 700; }
   a { color: var(--blue); }
-  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-  code, .num { font-family: var(--mono); font-size: .9em; font-variant-numeric: tabular-nums; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  code { font-family: var(--mono); font-size: .88em; background: var(--chip); padding: 1px 5px; border-radius: 5px; }
+  .num { font-variant-numeric: tabular-nums; }
 
-  /* Source chip: same look as on the site ("4.8 km/h · S2"). */
-  .src { font-size: .82em; color: var(--muted); white-space: nowrap; text-decoration: none; }
+  /* Source chip, as on the site ("4.8 km/h · S2"); hollow ring = proxy or assumption */
+  .src { font-size: .8em; color: var(--muted); white-space: nowrap; text-decoration: none; }
   a.src:hover { color: var(--blue); }
-  .ring { display: inline-block; width: .62em; height: .62em; border: 1px solid currentColor; border-radius: 50%; margin-left: .3em; vertical-align: .02em; }
+  .ring { display: inline-block; width: .6em; height: .6em; border: 1px solid currentColor; border-radius: 50%; margin-left: .3em; vertical-align: .02em; }
+  .blue { color: var(--blue); font-weight: 700; }
 
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 14px 0; }
-  .say { border-left: 3px solid var(--blue); padding: 4px 0 4px 14px; margin: 14px 0; font-size: 17px; }
+  .say { border-left: 3px solid var(--blue); padding: 6px 0 6px 16px; margin: 18px 0; font-size: 17px; max-width: 64ch; }
   .say b { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 4px; }
 
-  .tablewrap { overflow-x: auto; margin: 12px 0 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+  .tablewrap { overflow-x: auto; margin: 14px 0 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: 14.5px; }
   th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-top: 1px solid var(--line); }
   thead th { border-top: 0; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   td.v { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; }
+  td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
   .kind { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--muted); white-space: nowrap; }
 
-  .math { font-family: var(--mono); font-size: 14px; background: var(--chip); border-radius: 10px; padding: 12px 14px; overflow-x: auto; white-space: pre; margin: 10px 0 14px; line-height: 1.6; }
+  .math { font-family: var(--mono); font-size: 13.5px; background: var(--chip); border-radius: 10px; padding: 12px 14px; overflow-x: auto; white-space: pre; margin: 10px 0 14px; line-height: 1.65; }
 
-  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 12px 0; }
-  .grid2 .card { margin: 0; }
-  .card h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .big { font-size: 26px; font-weight: 300; font-variant-numeric: tabular-nums; line-height: 1.1; margin: 0 0 6px; }
+  /* Three-layer system, shown as a row of steps */
+  .layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 20px; }
+  @media (max-width: 720px) { .layers { grid-template-columns: minmax(0, 1fr); } }
+  .layer { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+  .layer p { font-size: 14.5px; margin: 0; }
+  .layer h4 { color: var(--blue); }
+
+  /* Headline numbers for results */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 14px 0 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+  .stat .big { font-size: 28px; font-weight: 300; font-variant-numeric: tabular-nums; line-height: 1.1; margin: 0 0 6px; }
+  .stat p { font-size: 14px; color: var(--muted); margin: 0; }
+  .stat.hl { border-color: var(--blue); background: var(--blue-soft); }
+  .stat.hl .big { color: var(--blue); }
+
+  /* Journey bars, drawn to one scale (1,953 s = full width) */
+  .bars { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; margin: 14px 0 20px; }
+  .bar { display: grid; grid-template-columns: 70px minmax(0, 1fr) 72px; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 14px; }
+  .track { display: flex; height: 22px; }
+  .track span { display: block; height: 100%; }
+  .track span + span { border-left: 2px solid var(--surface); }
+  .track span:first-child { border-radius: 4px 0 0 4px; }
+  .track span:last-child { border-radius: 0 4px 4px 0; }
+  .s1 { background: var(--seg1); } .s2 { background: var(--seg2); } .s3 { background: var(--seg3); } .s4 { background: var(--seg4); }
+  .bar .t { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 
   details { border-top: 1px solid var(--line); padding: 12px 0; }
   details:last-of-type { border-bottom: 1px solid var(--line); }
-  summary { cursor: pointer; font-weight: 700; list-style-position: outside; }
-  summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  summary { cursor: pointer; font-weight: 700; }
   details > div { padding-top: 8px; }
 
   .sources td:first-child { font-weight: 700; white-space: nowrap; }
-  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
-  html { scroll-behavior: smooth; }
 </style>
 
 <div class="wrap">
   <nav class="rail" aria-label="Contents">
     <p>Contents</p>
     <ol>
-      <li><a href="#idea">The idea in 30 seconds</a></li>
-      <li><a href="#screen">How to read the screen</a></li>
-      <li><a href="#bangalore">Bangalore, heavy rain</a></li>
-      <li><a href="#others">The other scenarios</a></li>
-      <li><a href="#maths">Every calculation</a></li>
-      <li><a href="#engine">How the simulation works</a></li>
-      <li><a href="#hardware">Real-world hardware</a></li>
-      <li><a href="#questions">Likely questions</a></li>
+      <li class="part"><a href="#part1">1 · The concept</a></li>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#idea">The idea</a></li>
+      <li><a href="#states">What each junction does</a></li>
+      <li><a href="#trigger">When it switches on</a></li>
+      <li><a href="#hardware">The hardware</a></li>
+
+      <li class="part"><a href="#part2">2 · The prototype</a></li>
+      <li><a href="#layout">What's on screen</a></li>
+      <li><a href="#read">How to read it</a></li>
+      <li><a href="#controls">Controls</a></li>
+      <li><a href="#markers">Source tags</a></li>
+
+      <li class="part"><a href="#part3">3 · The simulation</a></li>
+      <li><a href="#short">In short</a></li>
+      <li><a href="#road">The road</a></li>
+      <li><a href="#traffic">The traffic</a></li>
+      <li><a href="#signals">The signals</a></li>
+      <li><a href="#ambulance">The ambulance</a></li>
+      <li><a href="#fair">A fair comparison</a></li>
+      <li><a href="#inputs">Inputs per scenario</a></li>
+
+      <li class="part"><a href="#part4">4 · Results</a></li>
+      <li><a href="#summary">All four scenarios</a></li>
+      <li><a href="#bangalore">Bangalore in detail</a></li>
+      <li><a href="#gurugram">Gurugram in detail</a></li>
+      <li><a href="#maths">The calculations</a></li>
+
+      <li class="part"><a href="#part5">5 · For the jury</a></li>
       <li><a href="#limits">What to admit</a></li>
+      <li><a href="#questions">Likely questions</a></li>
       <li><a href="#sources">Sources</a></li>
     </ol>
   </nav>
@@ -124,170 +191,339 @@
   <main>
     <header class="top">
       <p class="eyebrow">Emergency Enroute · jury notes</p>
-      <h1>Every number on screen, and where it comes from</h1>
-      <p class="lede">Plain-words notes for the prototype. Each value links to its source. A hollow circle <span class="ring" aria-label="hollow circle"></span> means a proxy (real data from a similar place) or an assumption (no public data found), exactly as on the site.</p>
+      <h1>How the system works, and how we tested it</h1>
+      <p class="lede">These notes go from the idea, to the prototype we built to show it, to the simulation underneath and the data it runs on. Every number has a source tag like <span class="src">S2</span>, which links to the source list at the end.</p>
+      <p>A hollow circle <span class="ring" aria-label="hollow circle"></span> next to a number means it is a <strong>proxy</strong> (real data from a similar place) or an <strong>assumption</strong> (no public data was found). The site marks them the same way.</p>
     </header>
 
-    <h2 id="idea">The idea in 30 seconds</h2>
-    <ul>
-      <li><strong>One extra light.</strong> Each traffic signal gets a <strong>blue light</strong> that switches on only when an ambulance is coming.</li>
-      <li><strong>n+1.</strong> The junction the ambulance is approaching <em>and the next one</em> react together. The first blinks blue and goes green for the ambulance. The next turns green early with a steady blue light, so its queue has drained by the time the ambulance gets there.</li>
-      <li><strong>When it switches.</strong> The ambulance sends its GPS position and speed every couple of seconds. The junction turns green when the ambulance is <strong>94 s away</strong> <a class="src" href="#s14">S14</a>, or as a backup when it is <strong>within 760 m</strong> <a class="src" href="#s14">S14<span class="ring"></span></a>, whichever comes first.</li>
-      <li><strong>Why it matters.</strong> A siren reaches only about <strong>12 m</strong> into a car at a junction <a class="src" href="#s13">S13</a>. The blue light warns drivers hundreds of metres earlier, and the early green clears the queue the ambulance would otherwise be stuck behind.</li>
-      <li><strong>No lane rule.</strong> We dropped the middle-lane idea. All lanes keep moving; the gain comes from the early greens.</li>
-    </ul>
-    <div class="say"><b>Say it like this</b>Drivers hear a siren with seconds to react. Our blue light gives them a minute and a half, and turns the next two signals green so the queue is gone before the ambulance arrives.</div>
+    <!-- ============================== PART 1 ============================== -->
+    <div class="partHead" id="part1">
+      <p class="eyebrow">Part 1</p>
+      <h2>The concept</h2>
+      <p>What the system is, why it is needed, and how it would work on a real street.</p>
+    </div>
 
-    <h2 id="screen">How to read the screen</h2>
+    <h3 id="problem">The problem: a siren warns too late</h3>
+    <p>Today an ambulance has only its siren. By the time a driver hears it, there is almost no time left to react, and the cars around them are stuck in the same queue at a red light.</p>
+    <ul>
+      <li>At a city junction a siren carries only about <strong>12 m</strong> into a closed car <a class="src" href="#s13">S13</a>.</li>
+      <li>With windows closed, drivers work out where the siren is coming from only <strong>26%</strong> of the time <a class="src" href="#s13">S13</a>. Reacting takes about <strong>1.6 s</strong> <a class="src" href="#s13">S13</a>.</li>
+      <li><strong>62%</strong> of ambulance drivers say motorists don't give way <a class="src" href="#s17">S17</a>. Response times in Indian cities run to <strong>25–30 min</strong> <a class="src" href="#s17">S17</a>.</li>
+      <li>Bengaluru has about <strong>3,000</strong> ambulance trips a day, and deaths on the way to hospital rose from <strong>175</strong> in 2021 to <strong>292</strong> in 2023 <a class="src" href="#s15">S15</a>.</li>
+    </ul>
+    <p>Even drivers who want to move often can't. When the light ahead is red, the queue has nowhere to go.</p>
+
+    <h3 id="idea">The idea: one extra blue light, two junctions ahead</h3>
+    <p>Every traffic signal gets <strong>one extra light, a blue one</strong>. It switches on only when an ambulance is approaching.</p>
+    <p>The system works on <strong>n + 1</strong>: the junction the ambulance is heading for <em>and the one after it</em> react at the same moment.</p>
+    <ul>
+      <li>Both junctions turn <strong>green for the ambulance's road</strong> well before it arrives. The queue in front of it drains while it is still hundreds of metres away.</li>
+      <li>Drivers on the other roads see the blue light and know why they are being held at red.</li>
+      <li>Nobody has to change lanes or pull over. There is <strong>no middle-lane rule</strong>; every lane keeps moving.</li>
+    </ul>
+    <div class="say"><b>Say it like this</b>Drivers hear a siren with seconds to react. Our blue light warns them more than a minute and a half ahead, and turns the next two signals green so the queue is gone before the ambulance gets there.</div>
+
+    <h3 id="states">What each junction does</h3>
+    <p>Each junction is always in one of four states. The blue light tells drivers which one: <strong>blinking</strong> means the ambulance is about to cross here, <strong>steady</strong> means it is on its way.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Moment</th><th>First junction (J1)</th><th>Next junction (J2)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>No ambulance</strong></td><td>Normal: usual signal cycle, blue light off</td><td>Normal</td></tr>
+        <tr><td><strong>Ambulance comes within range of J1</strong></td><td><span class="blue">Alert</span>: blue light <strong>blinking</strong>. Green for the ambulance's road, red for all the others.</td><td><span class="blue">Prewarn</span>: blue light <strong>steady</strong>. Green for the ambulance's road, red for the others, so this queue clears early too.</td></tr>
+        <tr><td><strong>Ambulance passes J1</strong></td><td>Cleared: goes back to its normal cycle</td><td><span class="blue">Alert</span>: blue light starts blinking. The green stays on.</td></tr>
+        <tr><td><strong>Ambulance passes J2</strong></td><td>Normal</td><td>Cleared, then Normal</td></tr>
+      </tbody>
+    </table></div>
+    <p>Every change to green, and the return to the normal cycle, goes through <strong>amber (3 s) and all-red (2 s)</strong> first <a class="src" href="#s12">S12</a>, so no road jumps straight from green to red. After the ambulance passes, the junction carries on its cycle from where it was interrupted.</p>
+
+    <h3 id="trigger">When it switches on</h3>
+    <p>The ambulance sends its position and speed every couple of seconds. Each time, the junction works out how long the ambulance will take to arrive:</p>
+    <div class="math">time to arrive (ETA) = distance to the junction ÷ ambulance speed</div>
+    <p>The junction switches to Alert when <strong>either</strong> of these is true, whichever comes first:</p>
+    <ol>
+      <li>The ambulance is <strong>94.3 s</strong> or less away <a class="src" href="#s14">S14</a>. This is the main rule.</li>
+      <li>The ambulance is within <strong>760 m</strong> <a class="src" href="#s14">S14<span class="ring"></span></a>. This is the backup for an ambulance stuck in a jam: its speed is close to zero, so its ETA never drops.</li>
+    </ol>
+    <p>Both numbers come from a real pilot in Bengaluru, where a device turned signals green when an ambulance was 760 m away <a class="src" href="#s14">S14</a>. The 94.3 s is how long 760 m takes on a clear road (worked out in <a href="#maths">the calculations</a>).</p>
+
+    <h3 id="hardware">The hardware, in three layers</h3>
+    <div class="layers">
+      <div class="layer"><h4>1 · In the ambulance</h4><p>A GPS unit (NEO-M8N) and a motion sensor (MPU9250) send <code>{lat, lon, heading, speed, timestamp}</code> every 1–2 s over 4G or LoRa.</p></div>
+      <div class="layer"><h4>2 · Central routing</h4><p>Matches the position to the city map, finds the next signals on the route, and works out the distance (haversine formula), the direction check and the ETA to each.</p></div>
+      <div class="layer"><h4>3 · At the junction</h4><p>A controller (Raspberry Pi or ESP32) switches the blue light with a relay and overrides the signal phase. Junctions pass the message on to the next one over MQTT. An ANPR camera confirms the ambulance has passed.</p></div>
+    </div>
+    <p>An optional backup listens for the siren with a microphone and a sound classifier, in case GPS or the network drops. None of this hardware has been built or field-tested; the prototype shows what it would do.</p>
+
+    <!-- ============================== PART 2 ============================== -->
+    <div class="partHead" id="part2">
+      <p class="eyebrow">Part 2</p>
+      <h2>How we show it: the prototype</h2>
+      <p>A web page that plays the system out on real streets, so the jury can watch it work instead of reading about it.</p>
+    </div>
+
+    <h3 id="layout">What's on screen</h3>
+    <p>The screen has two parts. On the left is a <strong>text panel</strong> with the scenario, the result and the state of each signal. On the right is a <strong>dark 3D city</strong> built from real OpenStreetMap buildings and roads <a class="src" href="#s20">S20</a>, with the ambulance's route running through it.</p>
+    <p>There are two pages, both using the same 3D city:</p>
+    <ul>
+      <li><strong>Map:</strong> a tilted view of the whole route and both junctions.</li>
+      <li><strong>Junction:</strong> the camera moves down to one junction to show its arms, lanes, signal heads and queues.</li>
+    </ul>
+    <p>Two cities can be picked at the bottom right: <strong>Gurgaon</strong> (Monday evening peak) and <strong>Bangalore</strong> (heavy evening rain).</p>
+
+    <h3 id="read">How to read it</h3>
+    <p>Colour always means the same thing, and nothing else is coloured.</p>
     <div class="tablewrap"><table>
       <thead><tr><th>What you see</th><th>What it means</th></tr></thead>
       <tbody>
-        <tr><td><code>4.8 km/h · S2</code></td><td>A number and its <strong>source tag</strong>. S2 is a row in the sources list at the bottom of this page.</td></tr>
-        <tr><td><code>760 m · S14</code> <span class="ring"></span></td><td>The <strong>hollow circle</strong> marks a proxy or an assumption.</td></tr>
-        <tr><td>Hover for 2 seconds</td><td>On the site, resting the pointer on any number or control for 2 s shows a small box explaining it in one sentence, with its source and the kind of number. It goes away when the pointer leaves.</td></tr>
-        <tr><td><code>11:35 REAL TIME</code></td><td>Real time since the ambulance appeared. <strong>Playback runs 15× faster</strong> than real life, so 11:35 of real time is about 46 s on screen. Speeds are never sped up, only the clock.</td></tr>
-        <tr><td>Without / With system</td><td>The same traffic, from the same random seed, replayed with the system off or on. Keyboard: <code>S</code>.</td></tr>
-        <tr><td>Journey bars</td><td>Journey time in each run on one scale. The J1 / J2 ticks show when the ambulance passed each junction.</td></tr>
-        <tr><td>Glass card, top right</td><td>What is happening right now, in two lines, and which step of the trip it is.</td></tr>
-        <tr><td>Red line with a number</td><td>Distance from the ambulance to the next junction, counted along the road. The same distance the trigger uses.</td></tr>
-        <tr><td>Blue light: blinking / steady / off</td><td>Blinking: <strong>Alert</strong>, green for the ambulance, red for everyone else. Steady: <strong>Prewarn</strong>, the next junction gone green early. Off: normal cycle.</td></tr>
-        <tr><td>Amber dots</td><td>General traffic, one dot per vehicle. Tight bright clusters are queues.</td></tr>
+        <tr><td><span class="blue">Blue</span> glowing dot and dotted line</td><td>The ambulance and its route.</td></tr>
+        <tr><td><span class="blue">Blue</span> light: blinking / steady / off</td><td>Blinking: <strong>Alert</strong>. Steady: <strong>Prewarn</strong>. Off: normal. The pin above each junction also says the state in words.</td></tr>
+        <tr><td><span class="blue">Blue</span> ring on the ground</td><td>The trigger range: how far away the ambulance was when the junction switched on.</td></tr>
+        <tr><td><span style="color: var(--amber); font-weight: 700">Amber</span> dots</td><td>General traffic, one dot per vehicle. Tight, bright clusters are queues.</td></tr>
+        <tr><td>Red line with a number</td><td>Distance from the ambulance to the next junction, measured along the road. The same distance the trigger uses.</td></tr>
+        <tr><td>Red / amber / green dots</td><td>The ordinary signal heads on each road into the junction.</td></tr>
+        <tr><td>Glass card, top right</td><td>What is happening right now in two plain lines, and which step of the trip it is.</td></tr>
+        <tr><td><code>11:35 REAL TIME</code></td><td>Real time since the ambulance appeared. Playback runs <strong>15× faster</strong> than real life. Only the clock is sped up; every speed is true to life.</td></tr>
+        <tr><td>Journey bars</td><td>Journey time with and without the system, on one scale. Ticks mark when the ambulance passed J1 and J2.</td></tr>
       </tbody>
     </table></div>
 
-    <h2 id="bangalore">Bangalore, heavy evening rain</h2>
-    <p>Silk Board Junction, then the next signal towards Madiwala. The screen you asked about. Each row is one thing on that screen.</p>
+    <h3 id="controls">Controls</h3>
     <div class="tablewrap"><table>
-      <thead><tr><th>On screen</th><th>Plain meaning</th><th>How it is worked out</th><th>Kind</th></tr></thead>
+      <thead><tr><th>Control</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td class="v">4.8 km/h · S2</td><td>Average traffic speed in heavy rain.</td><td>Taken directly: Outer Ring Road after about 2 h of rain, 4.8 km/h with a 3.2 km queue <a class="src" href="#s2">S2</a>. Cross-check: Silk Board's peak speed is 4.48 km/h even when dry <a class="src" href="#s6">S6</a>.</td><td><span class="kind">sourced</span></td></tr>
-        <tr><td class="v">24.0 km/h · S9</td><td>The fastest the ambulance aims to drive with the system.</td><td>Safe speed for 150 mm of water on the road, from the flood-speed formula <a class="src" href="#s9">S9</a>: 24.26 km/h, stored as 24. The 150 mm depth is our assumption. It is a ceiling, not a speed reached: traffic ahead holds the ambulance to an average of <strong>4.6 km/h</strong>.</td><td><span class="kind">derived</span></td></tr>
-        <tr><td class="v">4.8 km/h · S2 <span class="ring"></span></td><td>The ambulance's speed with only a siren.</td><td>Our assumption: it moves no faster than traffic, because drivers ahead can't hear it in time <a class="src" href="#s13">S13</a> and most don't yield <a class="src" href="#s17">S17</a>.</td><td><span class="kind">assumption</span></td></tr>
-        <tr><td class="v">760 m · S14 <span class="ring"></span></td><td>The signal also turns green once the ambulance is this close.</td><td>The distance a real Bengaluru pilot device used <a class="src" href="#s14">S14</a>. A proxy because it is that device, not ours. In this run it fired at 759 m: crawling at about 5 km/h, the ambulance was about 9 minutes away, far over the 94 s rule, so the 760 m backup fired first.</td><td><span class="kind">proxy</span></td></tr>
-        <tr><td class="v">32 min 33 s</td><td>Journey time with only a siren.</td><td>Simulation result: 1,953 s to cover 1,712 m (1 km before Silk Board to 300 m past the next signal). About 10 minutes of it is spent fully stopped in Silk Board's queue.</td><td><span class="kind">simulated</span></td></tr>
-        <tr><td class="v">22 min 9 s</td><td>Journey time with the system.</td><td>Simulation result: 1,329 s over the same 1,712 m. Never stops. Close to the 21.4 min that pure 4.8 km/h would take.</td><td><span class="kind">simulated</span></td></tr>
-        <tr><td class="v">10 min 24 s</td><td>Time saved.</td><td>1,953.0 − 1,329.4 = 623.6 s. Marked “estimated” because it comes from the simulation, not a road test.</td><td><span class="kind">simulated</span></td></tr>
-        <tr><td class="v">J1 / J2 ticks</td><td>When the ambulance passed each junction.</td><td>Without: 23:55 and 28:52. With: 12:51 and 17:41.</td><td><span class="kind">simulated</span></td></tr>
-        <tr><td class="v">285 s cycle</td><td>Silk Board takes 285 s to give every road its green once.</td><td>Measured timing: BTM 150 s, HSR 90 s, Hosur Road 45 s each side <a class="src" href="#s5">S5</a>. The ambulance's road gets <strong>45 s green, 240 s red</strong> every cycle.</td><td><span class="kind">sourced</span></td></tr>
+        <tr><td><strong>Without / With system</strong></td><td>Replays the same traffic with the system off or on. Key: <code>S</code>.</td></tr>
+        <tr><td><strong>Automated / Scroll</strong> (bottom left)</td><td>Automated plays the scenario on a loop. Scroll lets the scroll wheel move backwards and forwards through time. Key: <code>Shift</code> + <code>Space</code>. Touching the mouse or trackpad never switches mode.</td></tr>
+        <tr><td><code>Space</code></td><td>Pause and resume in Automated. In Scroll, switches back to Automated.</td></tr>
+        <tr><td><code>←</code> <code>→</code> and <code>Esc</code></td><td>Move between the Map and Junction pages. Esc goes back to the Map.</td></tr>
+        <tr><td>Click a junction pin</td><td>Opens that junction's close-up.</td></tr>
+        <tr><td>Drag / double-click the city</td><td>Turn and tilt the view. Double-click resets it.</td></tr>
+        <tr><td>Rest the pointer for 2 s</td><td>On any number or control: a small note says what it is, its source and what kind of number it is.</td></tr>
       </tbody>
     </table></div>
 
-    <h3>Where the 10 minutes come from</h3>
-    <div class="grid2">
-      <div class="card"><h4>Without the system</h4><p class="big">32 min 33 s</p><p>Stuck behind cars waiting out Silk Board's 240 s red. About <strong>587 s fully stopped</strong>. Average 3.2 km/h.</p></div>
-      <div class="card"><h4>With the system</h4><p class="big">22 min 9 s</p><p>Silk Board turns green 760 m ahead, so the queue drains first. <strong>0 s stopped</strong>. Average 4.6 km/h.</p></div>
-      <div class="card"><h4>Benchmark</h4><p class="big">21 min 24 s</p><p>1,712 m at a steady 4.8 km/h. With the system the ambulance gets within a minute of it.</p></div>
+    <h3 id="markers">Source tags</h3>
+    <p>Every number on screen carries its source, for example <code>4.8 km/h · S2</code>. Each number in the data file also records what kind of number it is:</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Kind</th><th>Meaning</th><th>Marked</th></tr></thead>
+      <tbody>
+        <tr><td><span class="kind">sourced</span></td><td>Taken directly from the source.</td><td>Tag only</td></tr>
+        <tr><td><span class="kind">derived</span></td><td>Calculated from sourced numbers. The formula is kept with it.</td><td>Tag only</td></tr>
+        <tr><td><span class="kind">proxy</span></td><td>Real data, but from a nearby or similar place.</td><td>Hollow circle <span class="ring"></span></td></tr>
+        <tr><td><span class="kind">assumption</span></td><td>No public data found. Our best estimate, to be replaced with field data.</td><td>Hollow circle <span class="ring"></span></td></tr>
+        <tr><td><span class="kind">simulated</span></td><td>A result of the simulation, such as a journey time. Marked “estimated” on screen.</td><td>*estimated</td></tr>
+      </tbody>
+    </table></div>
+
+    <!-- ============================== PART 3 ============================== -->
+    <div class="partHead" id="part3">
+      <p class="eyebrow">Part 3</p>
+      <h2>How the simulation works</h2>
+      <p>What is computed underneath the picture, and where each input comes from.</p>
     </div>
-    <div class="say"><b>Say it like this</b>Almost all of the 10 minutes is the wait at Silk Board's red light. The ambulance's road gets 45 seconds of green in a 285-second cycle. With the system the signal goes green 760 m ahead, so the queue has cleared before the ambulance gets there.</div>
-    <p>The ambulance never obeys a red light in either run. The siren-only delay comes from the cars in front of it that do.</p>
 
-    <h2 id="others">The other scenarios</h2>
+    <h3 id="short">In short</h3>
+    <p>For each scenario we build a stretch of road with two signalled junctions, fill it with traffic at the real volumes and speeds, and run the real signal timings. Then we send an ambulance through it <strong>twice</strong>: once with only a siren, once with the blue-light system. Everything else is identical. The difference in journey time is the headline result.</p>
+    <p>The picture only reads the simulation. Nothing on screen moves on its own; every vehicle, light and number is the simulation's state at that moment.</p>
+
+    <h3 id="road">The road</h3>
+    <ul>
+      <li>The ambulance starts <strong>1,000 m before J1</strong> <span class="ring"></span>, far enough that it always enters before any trigger can fire.</li>
+      <li>J1 to J2 is <strong>405 m</strong> in Bangalore and <strong>514 m</strong> in Gurgaon <a class="src" href="#s20">S20<span class="ring"></span></a>, measured on the OpenStreetMap streets we drew.</li>
+      <li>The run ends <strong>300 m after J2</strong> <span class="ring"></span>.</li>
+      <li>Each junction has four arms. Cross roads are drawn 300 m long. Lanes are 3.5 m wide <span class="ring"></span>.</li>
+    </ul>
+    <p>The simulation runs along a straight line. That line is then laid onto the real OpenStreetMap road, so the distances on the map and in the simulation are the same.</p>
+
+    <h3 id="traffic">The traffic</h3>
+    <ul>
+      <li><strong>How many.</strong> Vehicles arrive on each road at its hourly volume. At Silk Board these are the measured counts (17,816 vehicles an hour in total, 8,300 from BTM Layout) <a class="src" href="#s5">S5</a>. Where no count exists, the volume is set from the road's capacity <a class="src" href="#s11">S11</a> and an assumed load: 95% of capacity at peak, 105% for Gurgaon at 6 pm, 25% at night <span class="ring"></span>.</li>
+      <li><strong>What kind.</strong> Two-wheelers, cars, autos and buses in a set mix. Bengaluru: 55% / 25% / 12% / 8%. Gurgaon: 40% / 42% / 10% / 8% <span class="ring"></span>. The Bengaluru mix sits between the registered fleet (68% two-wheelers) <a class="src" href="#s7">S7</a> and roadside counts (39–44%) <a class="src" href="#s10">S10</a>.</li>
+      <li><strong>How they drive.</strong> Each vehicle speeds up, follows the one in front and brakes using the <strong>Intelligent Driver Model</strong>, a standard traffic model <a class="src" href="#s16">S16</a>. Each gets its own preferred speed, spread around the scenario's traffic speed (two-wheelers 10% faster, buses 15% slower <span class="ring"></span>), so they don't all move in step.</li>
+      <li><strong>In groups of 10.</strong> To run in a browser, the simulation moves traffic in groups of 10 vehicles of one type <span class="ring"></span>. A group's spacing is set so it flows like 10 vehicles would. On screen you see the individual vehicles.</li>
+      <li><strong>Turning.</strong> 60% of the traffic on the ambulance's road at J1 carries on to J2; the rest turns off <span class="ring"></span>.</li>
+    </ul>
+
+    <h3 id="signals">The signals</h3>
+    <ul>
+      <li><strong>Silk Board</strong> uses its measured timing: a <strong>285 s</strong> cycle with greens of 150 s for BTM Layout, 90 s for HSR Layout and 45 s for each side of Hosur Road <a class="src" href="#s5">S5</a>. These add up to more than 285 s, so BTM and HSR must overlap. We overlap them by 60 s <span class="ring"></span>.</li>
+      <li>The ambulance comes in on Hosur Road, so on a normal cycle it gets <strong>45 s of green and 240 s of red</strong>.</li>
+      <li><strong>Junctions with no published timing</strong> (both Gurgaon junctions and the second Bangalore junction) use a 150 s, four-phase cycle <span class="ring"></span>: 58 s for the ambulance's road, then 34, 24 and 14 s for the others.</li>
+      <li><strong>Between greens:</strong> amber 3 s and all-red 2 s, picked from the Indian Roads Congress ranges <a class="src" href="#s12">S12</a>.</li>
+      <li><strong>How fast a queue drains.</strong> A green light lets traffic through no faster than the IRC capacity formula allows: 525 × road width in metres, in car units per hour of green <a class="src" href="#s11">S11</a>. Buses count as 2.2 cars, autos 0.78, two-wheelers 0.46 <a class="src" href="#s10">S10</a>.</li>
+      <li>Both junctions' cycles start together; they are not coordinated <span class="ring"></span>, which is typical in Indian cities.</li>
+    </ul>
+
+    <h3 id="ambulance">The ambulance</h3>
+    <ul>
+      <li>It drives in the middle lane and <strong>never overtakes</strong>. It is held back only by the vehicles in front of it.</li>
+      <li>It ignores red lights in <strong>both</strong> runs. The siren-only delay therefore comes from the queue of cars in front of it, not from the ambulance waiting at an empty red light.</li>
+      <li>Its preferred speed depends on the run. <strong>Siren only:</strong> no faster than traffic <span class="ring"></span>, because drivers ahead can't hear it in time <a class="src" href="#s13">S13</a> and most don't give way <a class="src" href="#s17">S17</a>. <strong>With the system:</strong> a higher target <span class="ring"></span> (24 km/h in the Bangalore rain, the flood-safe speed <a class="src" href="#s9">S9</a>; 35 km/h in Gurgaon). It only reaches it where the road ahead is clear.</li>
+      <li>It sends a GPS packet every <strong>1.5 s</strong> <span class="ring"></span> (the concept says every 1–2 s). The junctions run the trigger rule on each packet, so a trigger fires within one packet of the threshold. That is why the logs show 759 m rather than exactly 760 m.</li>
+      <li>It has “passed” a junction when its rear clears the far side of the junction box.</li>
+    </ul>
+
+    <h3 id="fair">A fair comparison</h3>
+    <ul>
+      <li><strong>Same traffic.</strong> Both runs use the same random seed, so the traffic is identical until the system first changes a light.</li>
+      <li><strong>Queues already there.</strong> The simulation runs three full signal cycles before the ambulance appears <span class="ring"></span>, so it meets real queues, not an empty road.</li>
+      <li><strong>Real speeds.</strong> Only the playback clock is sped up (15×). A 4.8 km/h scene looks exactly 6× slower than a 29 km/h one.</li>
+      <li><strong>Repeatable.</strong> The same scenario always gives the same result, and scrubbing backwards shows exactly what happened.</li>
+      <li><strong>Rain done properly.</strong> Rain itself barely slows Indian traffic; standing water does <a class="src" href="#s21">S21</a>. So the rain scenarios slow traffic by water depth, using a published flood-speed formula <a class="src" href="#s9">S9</a>, not a general “rain is slower” factor.</li>
+    </ul>
+
+    <h3 id="inputs">Inputs per scenario</h3>
     <div class="tablewrap"><table>
-      <thead><tr><th>Scenario</th><th>Traffic speed</th><th>Without → with</th><th>Saved</th><th>What it shows</th></tr></thead>
+      <thead><tr><th>Input</th><th>Bangalore, heavy rain</th><th>Gurgaon, Monday 6 pm</th></tr></thead>
       <tbody>
-        <tr><td><strong>Gurugram, Monday 6 pm</strong><br>Rajiv Chowk → Subhash Chowk</td><td class="v">18.9 km/h · S3 <span class="ring"></span></td><td class="v">6:08 → 4:55</td><td class="v">1 min 13 s</td><td>Evening peak. New Delhi's evening-rush speed used as a proxy, since TomTom has no Gurugram index <a class="src" href="#s3">S3</a>. Here the <strong>94 s rule</strong> fires first, at 894 m, because the ambulance is doing 34 km/h. Its 35 km/h aim is an assumption, conservative next to a real green corridor that did 12 km in 6 min <a class="src" href="#s4">S4</a>.</td></tr>
-        <tr><td><strong>Night, clear</strong><br>Hosur Road (control)</td><td class="v">29 km/h · S1</td><td class="v">3:32 → 3:32</td><td class="v">0 s</td><td>The control case. With almost no traffic there is no queue to clear, so the system changes nothing. That is the honest result, and it shows the saving comes from queues, not from a trick. Speed derived from TomTom's Bengaluru figures <a class="src" href="#s1">S1</a>; volume 25% of the Silk Board count (assumption).</td></tr>
-        <tr><td><strong>Gurugram, monsoon waterlogging</strong></td><td class="v">≈ 5 km/h · S9</td><td class="v">34:09 → 31:50</td><td class="v">2 min 19 s</td><td>The limit case. At an assumed 250 mm of water the flood formula caps <strong>everyone</strong>, the ambulance included, at about 5 km/h <a class="src" href="#s9">S9</a>. The system can't make the road passable. Real stories of 5-minute trips taking an hour <a class="src" href="#s19">S19</a>.</td></tr>
+        <tr><td>Traffic speed</td><td class="v">4.8 km/h · S2</td><td class="v">18.9 km/h · S3 <span class="ring"></span></td></tr>
+        <tr><td>Where it comes from</td><td>Outer Ring Road after about 2 h of rain <a class="src" href="#s2">S2</a>. Cross-check: Silk Board's dry peak is 4.48 km/h <a class="src" href="#s6">S6</a>.</td><td>New Delhi's evening rush. TomTom has no Gurugram index, so this is a proxy <a class="src" href="#s3">S3</a>.</td></tr>
+        <tr><td>Ambulance, siren only</td><td class="v">4.8 km/h <span class="ring"></span></td><td class="v">18.9 km/h</td></tr>
+        <tr><td>Ambulance, with system</td><td class="v">24 km/h · S9</td><td class="v">35 km/h <span class="ring"></span></td></tr>
+        <tr><td>Why that speed</td><td>Flood-safe speed at an assumed 150 mm of water <a class="src" href="#s9">S9</a>.</td><td>Assumption. Conservative next to a real green corridor to Medanta: 12 km in 6 min <a class="src" href="#s4">S4</a>.</td></tr>
+        <tr><td>J1</td><td>Silk Board: measured counts and timing <a class="src" href="#s5">S5</a></td><td>Rajiv Chowk: 150 s plan, 105% load <span class="ring"></span></td></tr>
+        <tr><td>J2</td><td>Next signal towards Madiwala: 150 s plan, 95% load <span class="ring"></span></td><td>Subhash Chowk: 150 s plan, 105% load <span class="ring"></span></td></tr>
+        <tr><td>J1 → J2</td><td class="v">405 m · S20 <span class="ring"></span></td><td class="v">514 m · S20 <span class="ring"></span></td></tr>
       </tbody>
     </table></div>
+    <p>Two more scenarios use the same set-up. <strong>Night, clear</strong> on Hosur Road: traffic at 29 km/h <a class="src" href="#s1">S1</a>, and 25% of the Silk Board volumes <span class="ring"></span>. <strong>Gurgaon waterlogging</strong>: the Monday-peak corridor under an assumed 250 mm of water, which caps every vehicle, the ambulance included, at about 5 km/h <a class="src" href="#s9">S9</a>.</p>
 
-    <h2 id="maths">Every calculation, step by step</h2>
+    <!-- ============================== PART 4 ============================== -->
+    <div class="partHead" id="part4">
+      <p class="eyebrow">Part 4</p>
+      <h2>Results</h2>
+      <p>All results are simulation estimates, not road tests.</p>
+    </div>
 
-    <h3>Flood speed (the 24 km/h)</h3>
+    <h3 id="summary">All four scenarios</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Scenario</th><th class="r">Siren only</th><th class="r">With system</th><th class="r">Saved</th><th>What it shows</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Bangalore, heavy rain</strong><br>Silk Board → Hosur Road</td><td class="r">32:33</td><td class="r">22:09</td><td class="r"><strong>10 min 24 s</strong></td><td>The main case. A huge junction with a long red for the ambulance's road.</td></tr>
+        <tr><td><strong>Gurgaon, Monday 6 pm</strong><br>Rajiv Chowk → Subhash Chowk</td><td class="r">6:08</td><td class="r">4:55</td><td class="r"><strong>1 min 13 s</strong></td><td>Evening peak. Most of the gain is at the second junction, which the n+1 rule cleared early.</td></tr>
+        <tr><td><strong>Night, clear</strong><br>Hosur Road</td><td class="r">3:32</td><td class="r">3:32</td><td class="r"><strong>0 s</strong></td><td>The control case. No queues, so nothing to clear and nothing to gain.</td></tr>
+        <tr><td><strong>Gurgaon, waterlogging</strong></td><td class="r">34:09</td><td class="r">31:50</td><td class="r"><strong>2 min 19 s</strong></td><td>The limit case. Water caps everyone at about 5 km/h; the system can't make a flooded road fast.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><b>Say it like this</b>The system saves time where there is a queue to clear. At night it saves nothing, and in a flood it helps only a little. That is what we would expect, and it shows the gain comes from the early greens and nothing else.</div>
+
+    <h3 id="bangalore">Bangalore in detail</h3>
+    <p>The route runs from 1 km before Silk Board, through Silk Board, to 300 m past the next signal towards Madiwala: <strong>1,712 m</strong> in all.</p>
+    <div class="stats">
+      <div class="stat"><h4>Siren only</h4><p class="big">32 min 33 s</p><p>Average 3.2 km/h. Passes Silk Board at 23:55.</p></div>
+      <div class="stat"><h4>With the system</h4><p class="big">22 min 9 s</p><p>Average 4.6 km/h. Passes Silk Board at 12:51.</p></div>
+      <div class="stat hl"><h4>Time saved</h4><p class="big">10 min 24 s</p><p>1,953.0 s − 1,329.4 s = 623.6 s</p></div>
+    </div>
+    <p>Silk Board switched on when the ambulance was <strong>759 m</strong> away. Crawling at about 5 km/h, it was then many minutes from the junction, far beyond the 94 s rule, so the 760 m backup fired first.</p>
+
+    <h4 style="margin-top: 24px">Where the 10 minutes come from</h4>
+    <p>The journey split into four stretches, drawn to one scale:</p>
+    <div class="bars" role="img" aria-label="Siren only 32 min 33 s, with system 22 min 9 s. The approach to Silk Board takes 20 min 58 s without the system and 11 min 51 s with it.">
+      <div class="bar"><span>Siren only</span><div class="track"><span class="s1" style="width: 9.06%"></span><span class="s2" style="width: 64.41%"></span><span class="s3" style="width: 15.20%"></span><span class="s4" style="width: 11.33%"></span></div><span class="t">32:33</span></div>
+      <div class="bar"><span>With system</span><div class="track"><span class="s1" style="width: 3.07%"></span><span class="s2" style="width: 36.43%"></span><span class="s3" style="width: 14.84%"></span><span class="s4" style="width: 13.73%"></span></div><span class="t">22:09</span></div>
+      <div class="legend"><span><i class="s1"></i>Start → trigger point</span><span><i class="s2"></i>Trigger point → through Silk Board</span><span><i class="s3"></i>Silk Board → J2</span><span><i class="s4"></i>J2 → end</span></div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Stretch</th><th class="r">Siren only</th><th class="r">With system</th><th class="r">Saved</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Start → trigger point (first 241 m)</td><td class="r">2:57</td><td class="r">1:00</td><td class="r">1:57</td><td>No light has changed yet. The gain comes only from the ambulance's higher target speed with the system (24 against 4.8 km/h), which is an assumption.</td></tr>
+        <tr><td>Trigger point → through Silk Board (759 m)</td><td class="r">20:58</td><td class="r">11:51</td><td class="r"><strong>9:07</strong></td><td>The early green. Without it the ambulance sits behind cars waiting out Silk Board's 240 s red.</td></tr>
+        <tr><td>Silk Board → J2</td><td class="r">4:57</td><td class="r">4:50</td><td class="r">0:07</td><td>J2 had already turned green (Prewarn).</td></tr>
+        <tr><td>J2 → end (300 m)</td><td class="r">3:41</td><td class="r">4:28</td><td class="r">−0:47</td><td>Slower with the system on this stretch. Counted in the total.</td></tr>
+        <tr class="total"><td>Total</td><td class="r">32:33</td><td class="r">22:09</td><td class="r">10:24</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="say"><b>Say it like this</b>Most of the ten minutes, just over nine, is saved on the approach to Silk Board. The ambulance's road gets 45 seconds of green in a 285-second cycle. With the system, Silk Board turns green 760 m ahead, so the queue has gone by the time the ambulance gets there.</div>
+    <p>For comparison, 1,712 m at a steady 4.8 km/h with no stops takes 21 min 24 s. With the system the ambulance gets within a minute of that.</p>
+
+    <h3 id="gurugram">Gurugram in detail</h3>
+    <p>Here the ambulance is moving at about 34 km/h when the system switches on, so the <strong>94 s rule</strong> fires first, at <strong>894 m</strong> from Rajiv Chowk.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Stretch</th><th class="r">Siren only</th><th class="r">With system</th><th class="r">Saved</th></tr></thead>
+      <tbody>
+        <tr><td>Start → trigger point</td><td class="r">19.2 s</td><td class="r">10.5 s</td><td class="r">8.7 s</td></tr>
+        <tr><td>Trigger point → through Rajiv Chowk</td><td class="r">178.4 s</td><td class="r">159.5 s</td><td class="r">18.9 s</td></tr>
+        <tr><td>Rajiv Chowk → through Subhash Chowk</td><td class="r">113.8 s</td><td class="r">55.0 s</td><td class="r"><strong>58.8 s</strong></td></tr>
+        <tr><td>Subhash Chowk → end</td><td class="r">56.4 s</td><td class="r">70.0 s</td><td class="r">−13.6 s</td></tr>
+        <tr class="total"><td>Total</td><td class="r">367.8 s</td><td class="r">295.0 s</td><td class="r">72.8 s</td></tr>
+      </tbody>
+    </table></div>
+    <p>The biggest gain is at the <strong>second</strong> junction. Subhash Chowk turned green at the same moment as Rajiv Chowk (the n+1 rule), so its queue had cleared by the time the ambulance reached it. This is the clearest example of why warning the next junction matters.</p>
+
+    <h3 id="maths">The calculations, step by step</h3>
+
+    <h4 style="margin-top: 18px">The 94.3 s trigger</h4>
+    <div class="math">Clear-night Bengaluru speed:   29 km/h ÷ 3.6 = 8.06 m/s          (S1)
+Pilot's trigger distance:      760 m                               (S14)
+Time to cover it:              760 m ÷ 8.06 m/s = 94.3 s
+Rule:  switch on when  ETA ≤ 94.3 s   OR   distance ≤ 760 m</div>
+    <p>The 29 km/h itself: TomTom gives 36 min 9 s per 10 km at 74.4% congestion <a class="src" href="#s1">S1</a>, so free flow is about 36.15 ÷ 1.744 ≈ 20.7 min per 10 km, or 29 km/h.</p>
+
+    <h4 style="margin-top: 22px">Flood speed (the 24 km/h)</h4>
     <div class="math">v(w) = 0.0009·w² − 0.5529·w + 86.9448      w = water depth (mm), v = safe speed (km/h)
 v(150) = 0.0009 × 22,500 − 0.5529 × 150 + 86.9448
        = 20.25 − 82.94 + 86.94
-       = 24.26 km/h   → stored as 24
-At 300 mm or more the road counts as impassable (v = 0).</div>
-    <p>From Pregnolato et al. (2017) <a class="src" href="#s9">S9</a>. Table: 0 mm → 86.9, 100 mm → 40.7, 150 mm → 24.3, 250 mm → 5.0, 300 mm → 0 km/h.</p>
+       = 24.26 km/h   → used as 24
+v(250) ≈ 5.0 km/h  (the Gurgaon waterlogging case)
+300 mm or more: impassable</div>
+    <p>From Pregnolato et al. (2017) <a class="src" href="#s9">S9</a>. The water depths, 150 mm and 250 mm, are our assumptions.</p>
 
-    <h3>The 94 s trigger</h3>
-    <div class="math">29 km/h ÷ 3.6 = 8.06 m/s           (clear-night Bengaluru speed, S1)
-760 m ÷ 8.06 m/s = 94.3 s          (the pilot's 760 m, S14)
-ETA = distance ÷ speed             (checked on every GPS packet)
-Turn green when ETA ≤ 94.3 s  OR  distance ≤ 760 m</div>
-    <p>94.3 s is the warning the real pilot gives on a clear road. The 760 m backup covers an ambulance stuck in a jam: its speed is near zero, so its ETA never drops.</p>
+    <h4 style="margin-top: 22px">Silk Board traffic per road</h4>
+    <div class="math">Total 17,816 veh/h; BTM Layout 8,300 veh/h                (S5)
+Left for the other three roads: 17,816 − 8,300 = 9,516
+Split by green time 90 : 45 : 45  →  HSR 4,758 · Hosur N 2,379 · Hosur S 2,379</div>
+    <p>This is a 9:30–10:30 am count, used for the evening scene as a proxy.</p>
 
-    <h3>Unit conversions</h3>
-    <div class="math">km/h → m/s : divide by 3.6        4.8 km/h = 1.33 m/s     24 km/h = 6.67 m/s
-seconds → min:s                    1,953 s = 32 min 33 s   1,329 s = 22 min 9 s
-Screen time = real time ÷ 15       22 min 9 s real ≈ 89 s on screen</div>
+    <h4 style="margin-top: 22px">How many lanes</h4>
+    <div class="math">Capacity (IRC):  525 × road width (m)  car units per hour of green          (S11)
+Hosur S:  2,379 veh/h × 0.606 car units/veh × 285 s ÷ 45 s = 9,137 car units per hour of green
+Width needed:  9,137 ÷ 525 = 17.4 m  →  5 lanes of 3.5 m</div>
+    <p>0.606 is the average vehicle size in car units, from the vehicle mix <a class="src" href="#s7">S7</a> and car-unit values <a class="src" href="#s10">S10</a>. “5 lanes” is the least road that can carry the measured traffic in the measured green. Read it as effective lanes; traffic here is not lane-disciplined.</p>
 
-    <h3>Journey distance and the benchmark</h3>
+    <h4 style="margin-top: 22px">Gurgaon road capacity</h4>
+    <div class="math">Approach width 10.5 m (3 lanes × 3.5 m, assumption)
+525 × 10.5 = 5,512 car units per hour of green           (S11)</div>
+
+    <h4 style="margin-top: 22px">Journey length, benchmark and screen time</h4>
     <div class="math">1,000 m before J1 + 405 m J1→J2 + 7 m (half of J2's box) + 300 m after = 1,712 m
-1,712 m ÷ 1.33 m/s = 1,284 s ≈ 21 min 24 s   (steady 4.8 km/h, no stops)</div>
-    <p>The 405 m between the junctions is measured on the OpenStreetMap stand-in streets <a class="src" href="#s20">S20</a>.</p>
+At a steady 4.8 km/h (1.33 m/s):  1,712 ÷ 1.33 = 1,284 s ≈ 21 min 24 s
+Average speed, siren only:   1,712 m ÷ 1,953 s = 0.88 m/s ≈ 3.2 km/h
+Average speed, with system:  1,712 m ÷ 1,329 s = 1.29 m/s ≈ 4.6 km/h
+Screen time = real time ÷ 15:  22 min 9 s real ≈ 89 s on screen</div>
 
-    <h3>Time saved</h3>
-    <div class="math">Saved = journey without − journey with = 1,953.0 − 1,329.4 = 623.6 s = 10 min 24 s</div>
+    <!-- ============================== PART 5 ============================== -->
+    <div class="partHead" id="part5">
+      <p class="eyebrow">Part 5</p>
+      <h2>For the jury</h2>
+      <p>What to say up front, and answers to the questions most likely to come up.</p>
+    </div>
 
-    <h3>Silk Board traffic per road</h3>
-    <div class="math">Total 17,816 veh/h, BTM 8,300 veh/h                      (S5, 9:30–10:30 am count)
-Left for the others: 17,816 − 8,300 = 9,516
-Split by green time 90 : 45 : 45  →  HSR 4,758, Hosur N 2,379, Hosur S 2,379</div>
-    <p>A morning count, used for the evening as a proxy. The greens add to 330 s in a 285 s cycle, so BTM and HSR must overlap; we overlap them by 60 s.</p>
-
-    <h3>How many lanes</h3>
-    <div class="math">Junction capacity (IRC): 525 × road width (m) passenger-car units per hour of green   (S11)
-Hosur S: 2,379 veh/h × 0.606 PCU/veh × 285 s ÷ 45 s = 9,137 PCU per hour of green
-9,137 ÷ 525 = 17.4 m  →  5 lanes of 3.5 m</div>
-    <p>0.606 is the average size of a vehicle in car units, from the vehicle mix <a class="src" href="#s7">S7</a> and car-unit values <a class="src" href="#s10">S10</a>. So “5 lanes” means the least road that can carry the measured traffic in the measured green time. Read it as effective lanes: Indian traffic is not lane-disciplined.</p>
-
-    <h3>Signal changes</h3>
-    <div class="math">Amber 3 s + all-red 2 s = 5 s between greens      (picked from IRC ranges 3–6 s and 1–2 s, S12)</div>
-    <p>Every switch to green, including the system's, goes through this 5 s change, so no road ever jumps straight from green to red.</p>
-
-    <h2 id="engine">How the simulation works, in plain words</h2>
-    <ul>
-      <li><strong>Real scale.</strong> Every speed, distance and timing is real. Only the playback clock is sped up 15×.</li>
-      <li><strong>Car-following.</strong> Each vehicle speeds up, follows and brakes using the Intelligent Driver Model, a standard traffic model <a class="src" href="#s16">S16</a>. Every vehicle gets its own desired speed around the scenario speed; two-wheelers ride a little faster and buses a little slower.</li>
-      <li><strong>Groups of 10.</strong> To keep it fast, the engine moves traffic in groups of 10 vehicles of one type (assumption). On screen each group is drawn as its 10 vehicles.</li>
-      <li><strong>Traffic in.</strong> Vehicles arrive on each road at the hourly counts (S5 for Silk Board), divided by 10.</li>
-      <li><strong>Junction capacity.</strong> A green light lets traffic through no faster than the IRC capacity formula allows <a class="src" href="#s11">S11</a>, so queues drain at a realistic rate.</li>
-      <li><strong>Warm-up.</strong> Before the ambulance appears the simulation runs three full signal cycles, so the queues are already there.</li>
-      <li><strong>Fair comparison.</strong> Both runs use the same random seed: identical traffic until the ambulance arrives.</li>
-      <li><strong>The ambulance.</strong> It ignores red lights in both runs and never overtakes. It is slowed only by the vehicles ahead in its lane.</li>
-      <li><strong>Deterministic.</strong> The same scenario always gives the same result, so scrubbing backwards shows exactly what happened.</li>
-    </ul>
-
-    <h2 id="hardware">How it would work in the real world</h2>
-    <p>Nothing has been field-tested. The prototype simulates what this hardware would do.</p>
-    <div class="tablewrap"><table>
-      <thead><tr><th>Step</th><th>Hardware</th><th>In the prototype</th></tr></thead>
-      <tbody>
-        <tr><td>1. The ambulance reports where it is</td><td>GPS (NEO-M8N) and compass (MPU9250) send <code>{lat, lon, heading, speed, timestamp}</code> over 4G or LoRa.</td><td>A GPS packet every 1.5 s (assumption; the concept says every 1–2 s).</td></tr>
-        <tr><td>2. Junctions get the message</td><td>Through a central server, or junction to junction over MQTT.</td><td>Both junctions read every packet.</td></tr>
-        <tr><td>3. Each junction does the maths</td><td>Distance by the haversine formula; a heading check that the ambulance is coming towards it; ETA = distance ÷ speed.</td><td>Distance along the road; the ambulance is always on the route, so the heading check always passes.</td></tr>
-        <tr><td>4. The trigger fires</td><td>A Raspberry Pi or ESP32 switches a relay: blue light on, signal set to green for the ambulance.</td><td>ETA ≤ 94.3 s or distance ≤ 760 m.</td></tr>
-        <tr><td>5. The next junction is warned (n+1)</td><td>Junction N tells junction N+1, which turns its blue light on and starts clearing.</td><td>J2 goes green with a steady blue light at the same moment.</td></tr>
-        <tr><td>6. Reset</td><td>When the distance starts growing, or an ANPR camera confirms the ambulance passed.</td><td>When the back of the ambulance clears the far side of the junction; then amber, all-red, and the normal cycle carries on.</td></tr>
-        <tr><td>Backup</td><td>A microphone with a siren classifier, if GPS or the network drops.</td><td>Not simulated.</td></tr>
-      </tbody>
-    </table></div>
-
-    <h2 id="questions">Likely questions</h2>
-    <details><summary>Is 10 minutes realistic?</summary><div><p>It is a simulation estimate. Nearly all of it is the wait at Silk Board's red: the ambulance's road gets 45 s of green in a 285 s cycle <a class="src" href="#s5">S5</a>, so a siren-only ambulance sits in the queue for about 10 minutes. The saving is also <strong>conservative</strong>, because our ambulance never overtakes.</p></div></details>
-    <details><summary>Why does the ambulance only average 4.6 km/h when its limit is 24?</summary><div><p>Because it never overtakes. It moves at the speed of the traffic in front of it, which is 4.8 km/h in the rain <a class="src" href="#s2">S2</a>. The 24 km/h is the flood-safe ceiling <a class="src" href="#s9">S9</a>, not a speed it reaches.</p></div></details>
-    <details><summary>Why does the night scenario save nothing?</summary><div><p>There is almost no traffic, so there is no queue to clear. The system only helps where there is a queue. That is the control case, and it shows we aren't inflating results.</p></div></details>
-    <details><summary>Where does 760 m come from?</summary><div><p>A real Bengaluru pilot turned signals green when the ambulance was 760 m away <a class="src" href="#s14">S14</a>. We use it as the backup trigger distance, and derive the 94 s rule from it.</p></div></details>
-    <details><summary>Why trigger on time and not just distance?</summary><div><p>A fixed distance holds cross traffic at red for very different times: about a minute and a half for a fast ambulance, many minutes for one crawling in a jam. A time rule gives drivers the same warning every time. The distance backup is there because a stuck ambulance's ETA never drops.</p></div></details>
-    <details><summary>Doesn't holding everyone else at red cause new jams?</summary><div><p>Every other road is held only while the ambulance approaches and passes. The junction then goes through amber and all-red and carries on its cycle exactly where it stopped, so no road loses its turn. We haven't measured the knock-on delay to cross traffic; that would be a good next step.</p></div></details>
-    <details><summary>Why only 15× speed-up?</summary><div><p>So a 285 s Silk Board cycle plays in about 19 s: fast enough to watch, slow enough to follow. Only the clock changes; relative speeds stay true, so a 4.8 km/h scene looks exactly 6× slower than a 29 km/h one.</p></div></details>
-    <details><summary>Why is the Bangalore map not Silk Board?</summary><div><p>Our OpenStreetMap export covers Indiranagar, not Silk Board. The 3D streets are a stand-in; the names, traffic counts and signal timings are Silk Board's. Re-exporting the real area is listed as the next step. The same applies to Gurugram.</p></div></details>
-    <details><summary>Why are cars in groups of 10?</summary><div><p>Silk Board moves 17,816 vehicles an hour. Simulating each one would be slow in a browser, so the engine moves groups of 10 and each group follows the same driving rules, with spacing set so steady flow still matches the IRC capacity <a class="src" href="#s11">S11</a>. On screen you see the individual vehicles.</p></div></details>
-
-    <h2 id="limits">What to admit before you're asked</h2>
+    <h3 id="limits">What to admit before you're asked</h3>
     <ol>
-      <li><strong>Stand-in maps.</strong> The 3D streets in both cities are an OpenStreetMap stand-in, not the real junctions. The J1→J2 distances are measured on those streets.</li>
-      <li><strong>Unverified second junction.</strong> “Next signal towards Madiwala” is unconfirmed, and its 150 s timing is an assumption.</li>
-      <li><strong>One rain observation.</strong> 4.8 km/h is from one evening on the Outer Ring Road <a class="src" href="#s2">S2</a>; Silk Board's own 4.48 km/h <a class="src" href="#s6">S6</a> supports it.</li>
-      <li><strong>Morning count for an evening scene.</strong> Silk Board's volumes are a 9:30–10:30 am count <a class="src" href="#s5">S5</a>.</li>
-      <li><strong>Assumed water depth.</strong> 150 mm (Bangalore) and 250 mm (Gurugram) are assumptions.</li>
-      <li><strong>No overtaking.</strong> Our ambulance never passes traffic, so the saving is conservative.</li>
-      <li><strong>Estimates.</strong> All journey times and savings come from the simulation, not a field trial.</li>
+      <li><strong>Stand-in maps.</strong> Our OpenStreetMap exports cover Indiranagar (Bangalore) and Sector 39 (Gurgaon), not Silk Board or Rajiv Chowk. The names, traffic counts and timings are the real junctions'; the streets drawn are stand-ins, and the J1→J2 distances are measured on them.</li>
+      <li><strong>Unconfirmed junctions.</strong> “Next signal towards Madiwala” is not confirmed. Rajiv Chowk may no longer be a signalled junction at street level. Timings at both Gurgaon junctions and at Bangalore's J2 are assumptions.</li>
+      <li><strong>One rain observation.</strong> 4.8 km/h comes from one evening on the Outer Ring Road <a class="src" href="#s2">S2</a>. Silk Board's own 4.48 km/h <a class="src" href="#s6">S6</a> supports it.</li>
+      <li><strong>Morning count, evening scene.</strong> Silk Board's volumes are a 9:30–10:30 am count <a class="src" href="#s5">S5</a>.</li>
+      <li><strong>Part of the saving is the speed assumption.</strong> In Bangalore, 1 min 57 s of the 10 min 24 s comes before any light changes, from the ambulance's higher target speed with the system. The signals account for the rest.</li>
+      <li><strong>Assumed water depths.</strong> 150 mm and 250 mm are our assumptions.</li>
+      <li><strong>No overtaking.</strong> Our ambulance never passes other vehicles. Real ambulances do, so real times would be shorter in both runs.</li>
+      <li><strong>Cross traffic not measured.</strong> We haven't measured the extra delay to drivers held at red on the other roads.</li>
+      <li><strong>Estimates.</strong> Every journey time and saving comes from the simulation, not a field trial.</li>
     </ol>
 
-    <h2 id="sources">Sources</h2>
+    <h3 id="questions">Likely questions</h3>
+    <details><summary>Is 10 minutes realistic?</summary><div><p>It is a simulation estimate. Just over 9 minutes of it is saved on the approach to Silk Board, where the ambulance's road gets only 45 s of green in a 285 s cycle <a class="src" href="#s5">S5</a>. About 2 minutes comes from our assumption that the ambulance drives faster with the system. Because our ambulance never overtakes, the times in both runs are on the slow side.</p></div></details>
+    <details><summary>Isn't some of the saving just the faster ambulance?</summary><div><p>In Bangalore, 1 min 57 s is, yes: that part happens before any light changes. We say so openly. The remaining 8 min 27 s comes from the signals. In Gurgaon the speed share is 8.7 s of 72.8 s. In the waterlogging case the water caps both runs at the same speed, so all of the 2 min 19 s comes from the signals.</p></div></details>
+    <details><summary>Why does the ambulance only average 4.6 km/h when its target is 24?</summary><div><p>Because it never overtakes. It moves at the speed of the traffic in front of it, which is 4.8 km/h in the rain <a class="src" href="#s2">S2</a>. 24 km/h is the flood-safe ceiling <a class="src" href="#s9">S9</a>, reached only where the road ahead is clear.</p></div></details>
+    <details><summary>Why does the night scenario save nothing?</summary><div><p>There is almost no traffic, so there is no queue to clear, and our ambulance ignores red lights in both runs. The system helps only where there is a queue. It is the control case, and it shows we are not inflating results.</p></div></details>
+    <details><summary>Where does 760 m come from?</summary><div><p>A real Bengaluru pilot turned signals green when an ambulance was 760 m away <a class="src" href="#s14">S14</a>. We use it as the backup distance and work out the 94.3 s rule from it.</p></div></details>
+    <details><summary>Why trigger on time and not just distance?</summary><div><p>A fixed distance holds cross traffic for very different lengths of time: about a minute and a half for a fast ambulance, many minutes for one crawling in a jam. A time rule gives drivers the same warning every time. The distance backup is there because a stuck ambulance's ETA never drops.</p></div></details>
+    <details><summary>Why warn the next junction too?</summary><div><p>Because a queue takes time to drain. If J2 waited until the ambulance passed J1, the ambulance would reach J2's queue before it cleared. In Gurgaon, 58.8 s of the 72.8 s saved is at the second junction.</p></div></details>
+    <details><summary>Doesn't holding everyone else at red cause new jams?</summary><div><p>Other roads are held only while the ambulance approaches and passes. The junction then goes through amber and all-red and carries on its cycle from where it stopped, so no road loses its turn. We haven't measured the knock-on delay to cross traffic; that would be a good next step.</p></div></details>
+    <details><summary>Why speed playback up only 15×?</summary><div><p>So a 285 s Silk Board cycle plays in about 19 s: fast enough to watch, slow enough to follow. Only the clock changes, so relative speeds stay true.</p></div></details>
+    <details><summary>Why are the maps not the real junctions?</summary><div><p>Our OpenStreetMap exports cover other parts of each city. The streets are stand-ins; the junction names, traffic counts and signal timings are the real ones. Exporting the real corridors is the next step.</p></div></details>
+    <details><summary>Why move cars in groups of 10?</summary><div><p>Silk Board moves 17,816 vehicles an hour. Simulating each one would be too slow in a browser. Groups of 10 follow the same driving rules, with spacing set so they flow like 10 vehicles would, and queues drain at the IRC capacity <a class="src" href="#s11">S11</a>. On screen you see the individual vehicles.</p></div></details>
+
+    <h3 id="sources">Sources</h3>
     <div class="tablewrap"><table class="sources">
       <thead><tr><th>ID</th><th>What it gives us</th><th>Source</th></tr></thead>
       <tbody>
@@ -300,12 +536,12 @@ Hosur S: 2,379 veh/h × 0.606 PCU/veh × 285 s ÷ 45 s = 9,137 PCU per hour of g
         <tr id="s7"><td>S7</td><td>Bengaluru fleet: 1.28 crore vehicles, 87 lakh two-wheelers, 25.2 lakh cars</td><td><a href="https://deccanherald.com/india/karnataka/bengaluru/at-25-lakh-bengaluru-has-maximum-number-of-private-cars-4079754">Deccan Herald – Bengaluru has the most private cars</a></td></tr>
         <tr id="s8"><td>S8</td><td>Registered vehicles by type, Bengaluru 2024-25</td><td><a href="https://data.opencity.in/dataset/total-vehicles-registered-in-bengaluru/resource/4c0f7518-2ec8-496a-addc-9741b49b6671">OpenCity – Total Vehicles Registered in Bengaluru</a></td></tr>
         <tr id="s9"><td>S9</td><td>Flood depth vs safe speed: v(w) = 0.0009w² − 0.5529w + 86.9448; impassable at 300 mm</td><td>Pregnolato et al. (2017), <em>Transportation Research Part D</em> 55. <a href="https://doi.org/10.1016/j.trd.2017.06.020">doi:10.1016/j.trd.2017.06.020</a></td></tr>
-        <tr id="s10"><td>S10</td><td>Car-unit values: two-wheeler 0.46, auto 0.78, bus 2.2</td><td><a href="https://books.aijr.org/index.php/press/catalog/download/179/95/3808-1?inline=1">Sali &amp; Ajitha – Delay and saturation flow (ICCESP 2024)</a></td></tr>
+        <tr id="s10"><td>S10</td><td>Car-unit values: two-wheeler 0.46, auto 0.78, bus 2.2; roadside vehicle mixes</td><td><a href="https://books.aijr.org/index.php/press/catalog/download/179/95/3808-1?inline=1">Sali &amp; Ajitha – Delay and saturation flow (ICCESP 2024)</a></td></tr>
         <tr id="s11"><td>S11</td><td>IRC junction capacity: 525 × road width (m) car units per hour of green</td><td><a href="https://archive.nptel.ac.in/content/storage2/courses/105104098/TransportationII/lecture8/text/node8.html">NPTEL – Traffic signal design</a></td></tr>
         <tr id="s12"><td>S12</td><td>IRC:93-1985: cycle 40–120 s, amber 3–6 s, all-red 1–2 s</td><td><a href="https://infralens.in/code/IRC-93-1985">InfraLens – IRC 93-1985 summary</a></td></tr>
-        <tr id="s13"><td>S13</td><td>A siren reaches about 12 m into a car at a junction; reaction time about 1.6 s</td><td><a href="https://www.fireengineering.com/fire-apparatus/apparatus-siren-limitations-and-intersection-crashes/">Fire Engineering – Siren limitations and intersection crashes</a></td></tr>
+        <tr id="s13"><td>S13</td><td>A siren reaches about 12 m into a car at a junction; located correctly 26% of the time; reaction about 1.6 s</td><td><a href="https://www.fireengineering.com/fire-apparatus/apparatus-siren-limitations-and-intersection-crashes/">Fire Engineering – Siren limitations and intersection crashes</a></td></tr>
         <tr id="s14"><td>S14</td><td>Bengaluru pilot: the signal turns green when the ambulance is 760 m away</td><td><a href="https://www.deccanherald.com/india/karnataka/bengaluru/now-device-give-ambulances-right-2291367">Deccan Herald – A device to give ambulances right of way</a></td></tr>
-        <tr id="s15"><td>S15</td><td>Bengaluru: about 3,000 ambulance trips a day; ₹10,000 fine under MV Act 194E</td><td><a href="https://www.deccanherald.com/opinion/no-green-for-the-ambulance-3403011">Deccan Herald – No green for the ambulance</a></td></tr>
+        <tr id="s15"><td>S15</td><td>Bengaluru: about 3,000 ambulance trips a day; deaths en route 175 (2021) → 292 (2023); ₹10,000 fine under MV Act 194E</td><td><a href="https://www.deccanherald.com/opinion/no-green-for-the-ambulance-3403011">Deccan Herald – No green for the ambulance</a></td></tr>
         <tr id="s16"><td>S16</td><td>Intelligent Driver Model (car-following)</td><td>Treiber, Hennecke &amp; Helbing (2000), <em>Phys. Rev. E</em> 62. <a href="https://arxiv.org/abs/cond-mat/0002177">arXiv:cond-mat/0002177</a></td></tr>
         <tr id="s17"><td>S17</td><td>Indian cities: 25–30 min response; 62% of ambulance drivers say motorists don't yield</td><td><a href="https://visionias.in/current-affairs/upsc-daily-news-summary/article/2025-06-13/the-hindu/science-and-technology/reclaiming-the-golden-hour-how-technology-can-help-beat-urban-traffic-and-save-lives">The Hindu via Vision IAS – Reclaiming the Golden Hour</a></td></tr>
         <tr id="s18"><td>S18</td><td>Gurugram underpass speed limit 30 km/h</td><td><a href="https://www.tribuneindia.com/news/haryana/speed-limit-fixed-at-30km-hr-for-9-underpasses-in-gurugram-558467">The Tribune – 30 km/h limit for 9 underpasses</a></td></tr>
