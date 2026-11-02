@@ -99,7 +99,7 @@ export function PinLabel({ junction, name, register }: { junction: JunctionId; n
           <circle cx="12" cy="12" r="4" fill="none" stroke="#fff" strokeWidth="2" />
         </svg>
         <div className="pin__text">
-          <div className="pin__name" style={{ color: scene.labelCyan }}>{`${junction} · ${name}`}</div>
+          <div className="pin__name" style={{ color: scene.labelCyan }}>{name}</div>
           <div className="pin__state" style={{ color: scene.labelText }} />
         </div>
       </a>

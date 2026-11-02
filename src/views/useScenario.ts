@@ -7,7 +7,6 @@ import { at, deref, num, obj, scenarioById } from "../engine/data";
 import { buildCorridor, osmFileFor } from "../geo/corridor";
 import { runMarks, triggerDistance } from "../components/runMarks";
 import type { DataNode } from "../components/DataBadge";
-import { junctionName } from "../components/junctionText";
 import { adoptCity } from "../geo/cityCache";
 import { getRuns, preparedCity } from "./prepareCities";
 
@@ -77,7 +76,8 @@ function buildScenario(id: string) {
     queuedBelow: at(ctx, "global.queue.queuedBelow_kmh") as DataNode,
     queuedBelowMs: num(ctx, "global.queue.queuedBelow_kmh") / 3.6,
     destination: (scenario.junctions?.destination ?? "hospital").split(",")[0].replace(/\s*\(.*\)\s*$/, ""),
-    names: Object.fromEntries(JUNCTIONS.map((j) => [j, junctionName(scenario, j)])) as Record<JunctionId, string>,
+    // Junctions are shown as J1 and J2 only, never by name.
+    names: Object.fromEntries(JUNCTIONS.map((j) => [j, j])) as Record<JunctionId, string>,
   };
 }
 

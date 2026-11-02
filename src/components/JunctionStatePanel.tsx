@@ -13,7 +13,7 @@ export function JunctionStatePanel({ state, names }: { state: Readonly<SimState>
           <div className="row" key={j}>
             <span>
               <span className={`lamp lamp--${blue(c)}`} aria-hidden="true" />
-              {j} · {names[j]}
+              {names[j]}
             </span>
             <Explain className="row__value row__label" tip={{ body: STATE_EXPLAIN[c.state] }}>{STATE_TEXT[c.state]}</Explain>
           </div>

@@ -136,7 +136,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
             </p>
           </Section>
 
-          <Section label={focus ? `${focus} · ${sc.names[focus]}` : "Signals"}>
+          <Section label={focus ? sc.names[focus] : "Signals"}>
             <div aria-live="polite">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div key={focus ?? "map"} {...fade}>
