@@ -1,5 +1,5 @@
 {
-  "_readme": "Every number is {value, unit, src, kind}. kind = sourced (straight from source) | derived (calculated from sourced numbers, formula given) | proxy (real data from a nearby/similar place) | assumption (no public data found — replace with field data). src ids map to DATA_SOURCES.md.",
+  "_readme": "Every number is {value, unit, src, kind}. kind = sourced (straight from source) | derived (calculated from sourced numbers, formula given) | proxy (real data from a nearby/similar place) | assumption (no public data found — replace with field data). src ids map to DATA_SOURCES.md. 'note' is shorthand for the team; 'how' says in plain English how the number was found or worked out (inputs, formula, or what an assumption rests on) and is what the Sources sheet shows. Every number on the Sources sheet must have a 'how'.",
 
   "global": {
     "vehicleMix_bengaluru_registered": {
@@ -9,25 +9,25 @@
     },
     "pcu": {
       "car": { "value": 1.0, "src": "S10", "kind": "sourced" },
-      "twoWheeler": { "value": 0.46, "src": "S10", "kind": "sourced", "note": "dynamic PCU, time-headway method, Kerala intersections" },
-      "auto": { "value": 0.78, "src": "S10", "kind": "sourced" },
-      "bus": { "value": 2.2, "src": "S10", "kind": "sourced" }
+      "twoWheeler": { "value": 0.46, "src": "S10", "kind": "sourced", "note": "dynamic PCU, time-headway method, Kerala intersections", "how": "Measured in a study of signalised junctions in Kerala (S10), which compared the time gap a two-wheeler leaves at the stop line with a car's. A two-wheeler takes up 0.46 of a car's share of green time." },
+      "auto": { "value": 0.78, "src": "S10", "kind": "sourced", "how": "From the same study (S10): an auto-rickshaw takes up 0.78 of a car's share of green time." },
+      "bus": { "value": 2.2, "src": "S10", "kind": "sourced", "how": "From the same study (S10): a bus takes up 2.2 cars' worth of green time." }
     },
     "saturationFlow": { "value": "525 * approachWidth_m", "unit": "PCU/hour of green", "src": "S11", "kind": "sourced", "note": "IRC method, widths >= 5.5 m",
       "coefficient": { "value": 525, "unit": "PCU/hour of green per m of approach width", "src": "S11", "kind": "sourced" } },
     "vehicleMix_onRoad": {
       "_note": "Share of vehicles on the road (not registered). 'bus' stands for bus/other and uses the bus PCU and length.",
       "bengaluru": {
-        "twoWheeler": { "value": 0.55, "kind": "assumption", "note": "Between S7 registered (68%) and S10 on-road counts (39–44%). Replace with a video count." },
-        "car":        { "value": 0.25, "kind": "assumption", "note": "As twoWheeler." },
-        "auto":       { "value": 0.12, "kind": "assumption", "note": "As twoWheeler." },
-        "bus":        { "value": 0.08, "kind": "assumption", "note": "Bus/other. As twoWheeler." }
+        "twoWheeler": { "value": 0.55, "kind": "assumption", "note": "Between S7 registered (68%) and S10 on-road counts (39–44%). Replace with a video count.", "how": "No vehicle count exists for this road. Two figures bracket it: 68% of vehicles registered in Bengaluru are two-wheelers (87 lakh of 1.28 crore, S7), but roadside counts at junctions found only 39–44% (S10), because many registered two-wheelers are not on the road at once. We used 55%, roughly halfway. A 15-minute video count per road would replace it." },
+        "car":        { "value": 0.25, "kind": "assumption", "note": "As twoWheeler.", "how": "Our estimate. Once two-wheelers are set at 55%, the remaining 45% has no count to split it. We gave cars 25% (they are 20% of registrations, S7), autos 12% and buses and others 8%." },
+        "auto":       { "value": 0.12, "kind": "assumption", "note": "As twoWheeler.", "how": "Our estimate, part of the 45% left after two-wheelers (see Cars). No count of autos on this road was found." },
+        "bus":        { "value": 0.08, "kind": "assumption", "note": "Bus/other. As twoWheeler.", "how": "Our estimate, part of the 45% left after two-wheelers (see Cars). Includes goods vehicles; it uses the bus size and car-unit value." }
       },
       "gurugram": {
-        "twoWheeler": { "value": 0.40, "kind": "assumption", "note": "No Gurugram on-road data. More cars than Bengaluru (see gurugram-monday-peak.vehicleMix)." },
-        "car":        { "value": 0.42, "kind": "assumption", "note": "As twoWheeler." },
-        "auto":       { "value": 0.10, "kind": "assumption", "note": "As twoWheeler." },
-        "bus":        { "value": 0.08, "kind": "assumption", "note": "Bus/other. As twoWheeler." }
+        "twoWheeler": { "value": 0.40, "kind": "assumption", "note": "No Gurugram on-road data. More cars than Bengaluru (see gurugram-monday-peak.vehicleMix).", "how": "No vehicle count exists for any Gurugram road. The plan was to start from the Bengaluru mix (55% two-wheelers, 25% cars) and shift it towards cars, on our assumption that Gurugram traffic has more cars than Bengaluru's. We settled on 40% two-wheelers. This is our estimate, not data." },
+        "car":        { "value": 0.42, "kind": "assumption", "note": "As twoWheeler.", "how": "Our estimate (see Two-wheelers): 42% cars, more than Bengaluru's 25%. No Gurugram count was found to check it against." },
+        "auto":       { "value": 0.10, "kind": "assumption", "note": "As twoWheeler.", "how": "Our estimate: 10%, slightly below Bengaluru's 12%. No count was found." },
+        "bus":        { "value": 0.08, "kind": "assumption", "note": "Bus/other. As twoWheeler.", "how": "Our estimate: 8%, the same as Bengaluru. No count was found." }
       }
     },
     "vehicleLength_m": {
@@ -38,15 +38,15 @@
     },
     "idm": {
       "_note": "Intelligent Driver Model parameters (S16 standard values). Per real vehicle; scaling.spritePlatoon says how they scale for a 10-vehicle sprite.",
-      "a_mps2":     { "value": 1.0, "unit": "m/s²", "src": "S16", "kind": "sourced", "note": "maximum acceleration" },
-      "b_mps2":     { "value": 1.5, "unit": "m/s²", "src": "S16", "kind": "sourced", "note": "comfortable braking" },
+      "a_mps2":     { "value": 1.0, "unit": "m/s²", "src": "S16", "kind": "sourced", "note": "maximum acceleration", "how": "Standard value from the Intelligent Driver Model, the car-following model we use (Treiber, Hennecke & Helbing, 2000, S16): vehicles speed up at no more than 1 m/s²." },
+      "b_mps2":     { "value": 1.5, "unit": "m/s²", "src": "S16", "kind": "sourced", "note": "comfortable braking", "how": "Standard Intelligent Driver Model value (S16): vehicles brake comfortably at up to 1.5 m/s²." },
       "delta":      { "value": 4,   "src": "S16", "kind": "sourced", "note": "acceleration exponent" },
-      "s0_m":       { "value": 2,   "unit": "m", "src": "S16", "kind": "sourced", "note": "minimum (jam) gap" },
+      "s0_m":       { "value": 2,   "unit": "m", "src": "S16", "kind": "sourced", "note": "minimum (jam) gap", "how": "Standard Intelligent Driver Model value (S16): a stopped car leaves about 2 m to the one in front. (We use 1 m for two-wheelers, also an assumption.)" },
       "s0_twoWheeler_m": { "value": 1, "unit": "m", "kind": "assumption", "note": "Two-wheelers stop closer than cars." },
-      "T_s":        { "value": 1.5, "unit": "s", "src": "S16", "kind": "sourced", "note": "safe time headway" },
-      "T_twoWheeler_s":  { "value": 1.0, "unit": "s", "kind": "assumption", "note": "Two-wheelers follow closer than cars." },
+      "T_s":        { "value": 1.5, "unit": "s", "src": "S16", "kind": "sourced", "note": "safe time headway", "how": "Standard Intelligent Driver Model value (S16): drivers keep about 1.5 s behind the vehicle in front." },
+      "T_twoWheeler_s":  { "value": 1.0, "unit": "s", "kind": "assumption", "note": "Two-wheelers follow closer than cars.", "how": "No measured value found. Two-wheelers ride closer than cars, so we used 1 s instead of the model's standard 1.5 s." },
       "desiredSpeed": {
-        "sd":  { "value": 0.15, "kind": "assumption", "note": "Each sprite's desired speed = scenario traffic speed x normal(1, sd)." },
+        "sd":  { "value": 0.15, "kind": "assumption", "note": "Each sprite's desired speed = scenario traffic speed x normal(1, sd).", "how": "So that vehicles don't all move in step, each gets its own preferred speed: the scenario's traffic speed × a random factor that averages 1, with a typical spread of 15%, kept between 0.6 and 1.4. Two-wheelers then get × 1.1 and buses × 0.85. No data on the spread was found; 15% is our choice." },
         "min": { "value": 0.6,  "kind": "assumption", "note": "Clamp on the normal factor." },
         "max": { "value": 1.4,  "kind": "assumption", "note": "Clamp on the normal factor." },
         "typeFactor": {
@@ -58,14 +58,14 @@
       }
     },
     "signalTiming_chosen": {
-      "amber_s":  { "value": 3, "unit": "s", "src": "S12", "kind": "assumption", "note": "Picked from the IRC 3–6 s range." },
-      "allRed_s": { "value": 2, "unit": "s", "src": "S12", "kind": "assumption", "note": "Picked from the IRC 1–2 s range. Intergreen = amber + all-red = 5 s." },
+      "amber_s":  { "value": 3, "unit": "s", "src": "S12", "kind": "assumption", "note": "Picked from the IRC 3–6 s range.", "how": "The Indian Roads Congress guideline (IRC:93-1985, S12) allows 3 to 6 s of amber. We used 3 s, the low end of that range." },
+      "allRed_s": { "value": 2, "unit": "s", "src": "S12", "kind": "assumption", "note": "Picked from the IRC 1–2 s range. Intergreen = amber + all-red = 5 s.", "how": "The same guideline (S12) allows 1 to 2 s with every light red before the next road goes green. We used 2 s, the top of that range." },
       "offsetJ1toJ2_s": { "value": 0, "unit": "s", "kind": "assumption", "note": "Uncoordinated: both cycles start at t = 0. Typical of Indian signals." }
     },
     "signalPlans": {
       "_note": "Green windows as [start, end) in seconds of cycle time. Amber follows each green. Silk Board windows are keyed by arm name; the generic plan is keyed by arm role (in/out/left/right, see a scenario's geometry._readme).",
       "silkBoard": {
-        "cycle_s": { "value": 285, "unit": "s", "src": "S5", "kind": "sourced" },
+        "cycle_s": { "value": 285, "unit": "s", "src": "S5", "kind": "sourced", "how": "Measured at Silk Board and reported by Deccan Herald (S5): one full round of greens takes 285 s. BTM Layout gets 150 s, HSR Layout 90 s and each side of Hosur Road 45 s. Those add up to 330 s, more than 285, so BTM and HSR must run together for part of the time; we overlap them by 60 s." },
         "green": {
           "BTM_Layout": { "value": [0, 150],   "unit": "s", "src": "S5", "kind": "assumption", "note": "Phase A. Duration 150 s from S5; placement in the cycle is assumed." },
           "HSR_Layout": { "value": [90, 180],  "unit": "s", "src": "S5", "kind": "assumption", "note": "Phase B, 90 s (S5). Starts 90 s into BTM, not 60 s as first proposed: a 60 s overlap is what makes the cycle total 285 s with three 5 s intergreens (150 + 90 - 60 + 45 + 45 + 15 = 285). Starting at 60 s would overlap 90 s and leave 30 s unused." },
@@ -75,7 +75,7 @@
       },
       "fourPhase150": {
         "_note": "For junctions with no public timing: Rajiv Chowk, Subhash Chowk and both J2s. Asked for: main 60, cross 1 = 35, cross 2 = 25, cross 3 = 15, minus intergreens. Those add to 135 s, and with four 5 s intergreens they would need 155 s. So the 130 s of green left in a 150 s cycle is split in the same 60:35:25:15 ratio and rounded: 58 / 34 / 24 / 14. Main road = the ambulance's arm (in); cross 1 = the opposite arm (out); cross 2 = left; cross 3 = right.",
-        "cycle_s": { "value": 150, "unit": "s", "kind": "assumption", "note": "No public timing. Time 5 cycles from a video or on site." },
+        "cycle_s": { "value": 150, "unit": "s", "kind": "assumption", "note": "No public timing. Time 5 cycles from a video or on site.", "how": "No timing has been published for this junction. We assumed a 150 s cycle with four greens: 58 s for the ambulance's road, then 34, 24 and 14 s for the other three, each followed by 5 s of amber and all-red (58 + 34 + 24 + 14 + 4 × 5 = 150). The greens keep the ratio 60 : 35 : 25 : 15 from our first plan, scaled to fit. Timing five cycles on a video would replace it." },
         "green": {
           "in":    { "value": [0, 58],    "unit": "s", "kind": "assumption", "note": "Main road." },
           "out":   { "value": [63, 97],   "unit": "s", "kind": "assumption", "note": "Cross 1." },
@@ -85,11 +85,11 @@
       }
     },
     "volumeToCapacity": {
-      "peak":     { "value": 0.95, "kind": "assumption", "note": "Used where no count exists: volume per arm = v/c x saturation flow x green/cycle, then PCU -> vehicles with the scenario mix." },
+      "peak":     { "value": 0.95, "kind": "assumption", "note": "Used where no count exists: volume per arm = v/c x saturation flow x green/cycle, then PCU -> vehicles with the scenario mix.", "how": "No traffic count for this junction. We assumed it carries 95% of what it can handle: busy, but its queue just clears each cycle. Traffic per road = 0.95 × capacity (525 × road width, S11) × green time ÷ cycle time." },
       "baseline": { "value": 0.25, "kind": "assumption", "note": "Night. Same formula as peak." }
     },
     "turning": {
-      "j1ThroughToJ2": { "value": 0.6, "kind": "assumption", "note": "Share of J1's main-road (in arm) traffic that continues to J2. The other 40% turn off at J1. J1's cross streets do not feed J2, and J2's cross streets are independent. Used by the Bengaluru scenarios; Gurugram sets its own (sim.j1ThroughShare)." }
+      "j1ThroughToJ2": { "value": 0.6, "kind": "assumption", "note": "Share of J1's main-road (in arm) traffic that continues to J2. The other 40% turn off at J1. J1's cross streets do not feed J2, and J2's cross streets are independent. Used by the Bengaluru scenarios; Gurugram sets its own (sim.j1ThroughShare).", "how": "No turning count exists at Silk Board. We assumed 60% of the traffic on the ambulance's road carries on towards the next signal and 40% turns off." }
     },
     "signalTiming_IRC93": {
       "cycleMin_s": { "value": 40, "src": "S12", "kind": "sourced" },
@@ -98,20 +98,20 @@
       "allRed_s":   { "value": [1, 2], "src": "S12", "kind": "sourced" }
     },
     "driver": {
-      "perceptionReaction_s": { "value": 1.6, "src": "S13", "kind": "sourced", "note": "average; IRC design value for stopping sight distance is 2.5 s" },
-      "sirenEffectiveRange_urbanIntersection_m": { "value": 12, "src": "S13", "kind": "sourced", "note": "<= 40 ft (1977 US DOT study cited in S13)" },
+      "perceptionReaction_s": { "value": 1.6, "src": "S13", "kind": "sourced", "note": "average; IRC design value for stopping sight distance is 2.5 s", "how": "Fire Engineering (S13): drivers take about 1.6 s on average to notice and react. (India's road design guidelines use 2.5 s to be safe.)" },
+      "sirenEffectiveRange_urbanIntersection_m": { "value": 12, "src": "S13", "kind": "sourced", "note": "<= 40 ft (1977 US DOT study cited in S13)", "how": "From a 1977 US Department of Transportation study, cited by Fire Engineering (S13): at a city junction a siren carries only about 40 ft (12 m) into a closed car." },
       "sirenEffectiveRange_closedCar_m": { "value": 24, "src": "S13", "kind": "sourced", "note": "<= 80 ft, author's estimate" },
-      "sirenLocalisedCorrectly_windowsClosed": { "value": 0.26, "src": "S13", "kind": "sourced" },
-      "motoristsDontYield": { "value": 0.62, "src": "S17", "kind": "sourced", "note": "Share of ambulance drivers who say motorists don't yield." },
+      "sirenLocalisedCorrectly_windowsClosed": { "value": 0.26, "src": "S13", "kind": "sourced", "how": "Fire Engineering (S13): with the windows shut, drivers worked out which direction a siren came from only 26% of the time." },
+      "motoristsDontYield": { "value": 0.62, "src": "S17", "kind": "sourced", "note": "Share of ambulance drivers who say motorists don't yield.", "how": "Reported in The Hindu, via Vision IAS's summary (S17): 62% of ambulance drivers say motorists don't give way." },
       "_note": "Context only. The simulation has no lane changes and no middle-lane rule: all lanes keep flowing, and the system clears the road by turning both junctions green early. These figures explain why a siren alone gives too little warning."
     },
     "system": {
-      "triggerEta_s": { "value": 94.3, "unit": "s", "src": "S14", "kind": "derived", "note": "760 m (S14) / 29 km/h (baseline night speed, S1) = 94.3 s: the warning the Bengaluru pilot gives at free-flow speed. J1 triggers when the ETA in a GPS packet (distance / speed) drops to this or below. Distance is measured along the route." },
-      "triggerDistance_m": { "value": 760, "src": "S14", "kind": "proxy", "note": "Backup trigger: J1 also triggers once the ambulance is this close, whatever its ETA. Covers an ambulance crawling or stopped in a queue, whose ETA would otherwise never drop. Distance at which the Bengaluru pilot device turns the signal green." },
+      "triggerEta_s": { "value": 94.3, "unit": "s", "src": "S14", "kind": "derived", "note": "760 m (S14) / 29 km/h (baseline night speed, S1) = 94.3 s: the warning the Bengaluru pilot gives at free-flow speed. J1 triggers when the ETA in a GPS packet (distance / speed) drops to this or below. Distance is measured along the route.", "how": "Worked out from two sources. A Bengaluru pilot device turned signals green when the ambulance was 760 m away (S14). On a clear road Bengaluru traffic moves at 29 km/h (S1), which is 29 ÷ 3.6 = 8.06 m/s. Covering 760 m at that speed takes 760 ÷ 8.06 = 94.3 s. So the junction gives the same warning as the pilot, counted in time rather than distance." },
+      "triggerDistance_m": { "value": 760, "src": "S14", "kind": "proxy", "note": "Backup trigger: J1 also triggers once the ambulance is this close, whatever its ETA. Covers an ambulance crawling or stopped in a queue, whose ETA would otherwise never drop. Distance at which the Bengaluru pilot device turns the signal green.", "how": "The distance at which a Bengaluru pilot device turned signals green for an ambulance (S14). It is that device's setting, not a measurement of ours, so it is marked as a proxy. We use it as a backup: an ambulance stuck in a jam has almost no speed, so its time to arrive never drops to 94.3 s." },
       "triggerRule": { "value": "ETA <= triggerEta_s OR distance <= triggerDistance_m, checked on each GPS packet", "kind": "assumption", "note": "The tech-stack PDF triggers on ETA below a threshold; the distance backup is ours." },
       "n1Prewarn": { "value": "J2 goes PREWARN at the same moment J1 goes ALERT", "kind": "assumption", "note": "n+1 rule from the concept PDF. In PREWARN, J2 turns green for the ambulance's approach (same intergreen as ALERT) with its blue light steady, so its queue clears before the ambulance arrives. It blinks (ALERT) once the ambulance passes J1." },
-      "gpsInterval_s": { "value": 1.5, "unit": "s", "kind": "assumption", "note": "Concept: the ambulance unit sends a packet every 1–2 s. Midpoint. (The tech-stack PDF says every 1 s.)" },
-      "clearedDuration_s": { "value": 5, "unit": "s", "kind": "derived", "note": "amber 3 + all-red 2 (signalTiming_chosen). Then the junction returns to the phase that was interrupted, with its remaining green." },
+      "gpsInterval_s": { "value": 1.5, "unit": "s", "kind": "assumption", "note": "Concept: the ambulance unit sends a packet every 1–2 s. Midpoint. (The tech-stack PDF says every 1 s.)", "how": "The concept has the ambulance send its position every 1 to 2 s. We used the middle, 1.5 s. (The tech-stack document says every 1 s.)" },
+      "clearedDuration_s": { "value": 5, "unit": "s", "kind": "derived", "note": "amber 3 + all-red 2 (signalTiming_chosen). Then the junction returns to the phase that was interrupted, with its remaining green.", "how": "Amber 3 s + all-red 2 s = 5 s. Once the ambulance has passed, the junction makes the same change any signal makes before a new green, then carries on its cycle from where it was interrupted." },
       "passedRule": { "value": "rear of ambulance crosses the far edge of the junction box", "kind": "assumption", "note": "Box depth along the route = width of the cross road (left + right lanes x lane width)." },
       "alertEntryRule": { "value": "conflicting greens go amber then all-red before the ambulance's arm turns green", "kind": "assumption", "note": "Same intergreen as everywhere else (5 s). If the ambulance's arm is already green, it stays green. Not stated in the concept; added for safety." }
     },
@@ -145,8 +145,8 @@
       "signals": { "value": "ignores red in both modes (emergency right of way); it is slowed only by vehicles ahead", "kind": "assumption", "note": "So 'without system' delay comes from queues that don't clear, not from the ambulance waiting at an empty red." }
     },
     "simulation": {
-      "dt_s": { "value": 0.2, "unit": "s", "kind": "assumption", "note": "Engine step. 1.6 s and 3 s are exact multiples." },
-      "warmUp_cycles": { "value": 3, "kind": "assumption", "note": "Ambulance enters after three full cycles of J1. One cycle (150 s at Gurugram) is shorter than the time traffic takes to fill the 1 km approach, so queues had not formed. Both modes use the same warm-up." },
+      "dt_s": { "value": 0.2, "unit": "s", "kind": "assumption", "note": "Engine step. 1.6 s and 3 s are exact multiples.", "how": "The simulation moves forward 0.2 s at a time. 0.2 s divides evenly into the 1.6 s reaction time and the 3 s amber." },
+      "warmUp_cycles": { "value": 3, "kind": "assumption", "note": "Ambulance enters after three full cycles of J1. One cycle (150 s at Gurugram) is shorter than the time traffic takes to fill the 1 km approach, so queues had not formed. Both modes use the same warm-up.", "how": "Before the ambulance appears, the simulation runs three full signal cycles so the queues are already there. With one cycle (150 s in Gurugram) traffic had not yet filled the 1 km approach, so there was no queue." },
       "maxDuration_s": { "value": 7200, "unit": "s", "kind": "assumption", "note": "Safety stop. A run that hits it reports that the ambulance did not get through." },
       "keyframeInterval_s": { "value": 20, "unit": "s", "kind": "assumption", "note": "Snapshot spacing for scrubbing; seeking replays from the nearest one. No effect on results." },
       "seed": { "value": 1, "kind": "assumption", "note": "Default random seed. With and without system share it." }
@@ -204,22 +204,22 @@
       "title": "Monday 6 pm peak — Gurugram, NH-48 → Sohna Road towards Medanta",
       "junctions": { "J1": "Rajiv Chowk (verify it is still signalised at grade)", "J2": "Subhash Chowk", "destination": "Medanta, Sector 38" },
       "display": { "place": "Gurugram", "city": "Gurgaon", "dayTime": "Monday 18:00", "conditions": "evening peak", "speed": { "ref": "corridorSpeed_kmh" } },
-      "corridorSpeed_kmh": { "value": 18.9, "src": "S3", "kind": "proxy", "note": "TomTom New Delhi metro, evening rush. TomTom has no separate Gurugram index." },
+      "corridorSpeed_kmh": { "value": 18.9, "src": "S3", "kind": "proxy", "note": "TomTom New Delhi metro, evening rush. TomTom has no separate Gurugram index.", "how": "TomTom's 2025 Traffic Index gives an evening-rush speed of 18.9 km/h for the New Delhi metro area (S3). TomTom publishes nothing for Gurugram on its own, so we use Delhi's figure as the closest match." },
       "congestionAt6pm": { "value": 1.92, "src": "S3", "kind": "proxy", "note": "192% extra travel time vs free flow" },
       "freeFlowSpeed_kmh": { "value": 40, "src": "S3", "kind": "derived", "note": "24 min per 10 km / 1.602" },
       "speedLimit_underpass_kmh": { "value": 30, "src": "S18", "kind": "sourced" },
       "signal": {
         "cycle_s": { "value": 150, "kind": "assumption", "note": "no public timing for these junctions. Time 5 cycles from a video or on site." },
-        "approachWidth_m": { "value": 10.5, "kind": "assumption", "note": "3 lanes x 3.5 m. Measure on Maps." },
-        "saturationFlow_pcuPerHr": { "value": 5512, "src": "S11", "kind": "derived", "note": "525 x 10.5" },
-        "volumeToCapacity": { "value": 1.05, "kind": "assumption", "note": "Demand just over capacity at the 6 pm peak, so queues grow from cycle to cycle instead of clearing. No count exists for these junctions; TomTom puts the evening rush at 192% extra travel time (S3, congestionAt6pm), which an undersaturated v/c of 0.95 did not show. Was 0.95. Replace with a junction count when one is found." }
+        "approachWidth_m": { "value": 10.5, "kind": "assumption", "note": "3 lanes x 3.5 m. Measure on Maps.", "how": "We assumed 3 lanes of 3.5 m: 3 × 3.5 = 10.5 m. Not yet measured; the road width on Google Maps would replace it." },
+        "saturationFlow_pcuPerHr": { "value": 5512, "src": "S11", "kind": "derived", "note": "525 x 10.5", "how": "Indian Roads Congress formula (S11): a road can discharge 525 car units per hour of green for every metre of width. 525 × 10.5 m = 5,512 car units per hour of green." },
+        "volumeToCapacity": { "value": 1.05, "kind": "assumption", "note": "Demand just over capacity at the 6 pm peak, so queues grow from cycle to cycle instead of clearing. No count exists for these junctions; TomTom puts the evening rush at 192% extra travel time (S3, congestionAt6pm), which an undersaturated v/c of 0.95 did not show. Was 0.95. Replace with a junction count when one is found.", "how": "No traffic count exists for these junctions. We set traffic at 105% of what each junction can handle, so queues grow from one cycle to the next. That matches TomTom's figure of 192% extra travel time at 6 pm (S3). At 95%, our first value, the queues cleared every cycle, which did not match." }
       },
       "vehicleMix": { "value": "use bengaluru mix with car share +10 pts", "kind": "assumption", "note": "no Gurugram on-road data found. Superseded by global.vehicleMix_onRoad.gurugram (sim.vehicleMix)." },
-      "ambulanceBaseline_noSystem_kmh": { "value": 18.9, "kind": "derived", "note": "stuck at traffic speed" },
-      "ambulanceWithSystem_kmh": { "value": 35, "kind": "assumption", "note": "Desired speed with both junctions green ahead. It is still held to the speed of traffic ahead in its lane. A signal-free green corridor, IGI→Medanta, covered 12 km in 6 min (S4), so 35 is conservative." },
+      "ambulanceBaseline_noSystem_kmh": { "value": 18.9, "kind": "derived", "note": "stuck at traffic speed", "how": "Set equal to the traffic speed, 18.9 km/h. With only a siren, drivers ahead can't hear it in time (12 m into a car, S13) and most don't give way (S17), so we assume the ambulance moves no faster than the traffic around it." },
+      "ambulanceWithSystem_kmh": { "value": 35, "kind": "assumption", "note": "Desired speed with both junctions green ahead. It is still held to the speed of traffic ahead in its lane. A signal-free green corridor, IGI→Medanta, covered 12 km in 6 min (S4), so 35 is conservative.", "how": "No measured speed exists for an ambulance on a cleared Gurugram road. We picked 35 km/h as a cautious figure: a real signal-free green corridor to Medanta covered 12 km in 6 min (S4), an average of 120 km/h. The ambulance only reaches 35 km/h where the road ahead is clear; otherwise it moves with the traffic in front." },
       "geometry": {
         "_readme": "Same conventions as scenarios.bengaluru-heavy-rain.geometry.",
-        "j1ToJ2_m": { "value": 514, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (513.5 m), replacing the 3000 m placeholder. Real map distance, but on the stand-in corridor (see geometry.osm.coverage), not Rajiv Chowk -> Subhash Chowk." },
+        "j1ToJ2_m": { "value": 514, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (513.5 m), replacing the 3000 m placeholder. Real map distance, but on the stand-in corridor (see geometry.osm.coverage), not Rajiv Chowk -> Subhash Chowk.", "how": "Measured along the OpenStreetMap road between the two junctions we drew: 513.5 m (S20). Those streets are a stand-in in Sector 39, not the real Rajiv Chowk to Subhash Chowk stretch, so it is marked as an assumption." },
         "osm": {
           "_readme": "Where src/geo puts the engine's straight route on the map. Way ids are from the export in /data/osm (S20).",
           "file": "gurgaon.geojson",
@@ -233,10 +233,10 @@
           "crossArms": { "value": "along the OSM road leaving the junction on that side, left of centre", "kind": "assumption", "note": "src/geo follows the cross road outward through the OSM road network (straightest way on at each node, skipping footways and service roads). Where the cross road meets the main road a little way along (a staggered junction), the arm jogs from the junction centre to it. Straight, at right angles to the route, only where no road is mapped. Each direction keeps to the left (India drives on the left); lane widths per global.crossArmDrawing." },
           "j1ToJ2Tolerance_m": { "value": 2, "unit": "m", "kind": "assumption", "note": "src/geo refuses to draw if the OSM J1 -> J2 length differs from j1ToJ2_m by more than this." }
         },
-        "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "From signal.approachWidth_m note (3 x 3.5 m)." },
+        "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "From signal.approachWidth_m note (3 x 3.5 m).", "how": "A lane width of 3.5 m, the same one used for the 10.5 m road width. Not measured." },
         "lanesPerApproach": {
           "J1": {
-            "in":    { "value": 3, "unit": "lanes", "kind": "assumption", "note": "Matches signal.approachWidth_m (10.5 m = 3 x 3.5 m). NH-48 arm." },
+            "in":    { "value": 3, "unit": "lanes", "kind": "assumption", "note": "Matches signal.approachWidth_m (10.5 m = 3 x 3.5 m). NH-48 arm.", "how": "Matches the assumed 10.5 m road width: 10.5 ÷ 3.5 m per lane = 3 lanes. Not measured." },
             "out":   { "value": 3, "unit": "lanes", "kind": "assumption", "note": "Sohna Road arm. Placeholder." },
             "left":  { "value": 3, "unit": "lanes", "kind": "assumption", "note": "Placeholder. Arm layout at Rajiv Chowk not verified." },
             "right": { "value": 3, "unit": "lanes", "kind": "assumption", "note": "Placeholder." }
@@ -249,8 +249,8 @@
           }
         },
         "approachLengthOnScreen_m": {
-          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach: 760 m (S14), or 94.3 s of ETA at the fastest ambulance speed (35 km/h = 917 m)." },
-          "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Medanta (destination) is not drawn; the run ends here." },
+          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach: 760 m (S14), or 94.3 s of ETA at the fastest ambulance speed (35 km/h = 917 m).", "how": "Chosen so the ambulance always starts before either trigger can fire: further out than 760 m, and further than 94.3 s at its top speed of 35 km/h (9.72 m/s × 94.3 s = 917 m)." },
+          "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Medanta (destination) is not drawn; the run ends here.", "how": "Chosen so you can see the ambulance clear Subhash Chowk and the junction go back to normal. Medanta itself is further on and is not drawn." },
           "crossArms":      { "value": 300,  "unit": "m", "kind": "assumption", "note": "Left/right arms at both junctions." }
         },
         "ambulanceEntry": {
@@ -274,7 +274,7 @@
           "J1": { "method": "vc", "vc": { "ref": "signal.volumeToCapacity" } },
           "J2": { "method": "vc", "vc": { "ref": "signal.volumeToCapacity" } }
         },
-        "j1ThroughShare": { "value": 0.75, "kind": "assumption", "note": "Share of the ambulance's road at Rajiv Chowk that carries on to Subhash Chowk; the other 25% turn off. Set by the team: the global 60% (40% turning off) was judged too high for this corridor. No turning count exists; replace with one." },
+        "j1ThroughShare": { "value": 0.75, "kind": "assumption", "note": "Share of the ambulance's road at Rajiv Chowk that carries on to Subhash Chowk; the other 25% turn off. Set by the team: the global 60% (40% turning off) was judged too high for this corridor. No turning count exists; replace with one.", "how": "No turning count exists at Rajiv Chowk. Our team judged that the 40% turning off we use for Bengaluru is too many for this corridor and set 25%, so 75% of the traffic carries on towards Subhash Chowk." },
         "waterDepth_mm": null,
         "_signalNote": "The 'signal' block above (150 s cycle, 10.5 m approach, v/c 0.95) applies to both J1 and J2."
       },
@@ -285,26 +285,26 @@
       "title": "Heavy rain, evening — Bengaluru, Silk Board → Hosur Road",
       "junctions": { "J1": "Silk Board Junction", "J2": "Next signal towards Madiwala / St John's Hospital (verify)", "destination": "St John's Hospital (verify: read from junctions.J2)" },
       "display": { "place": "Bengaluru", "city": "Bangalore", "dayTime": "Evening, heavy rain", "conditions": "heavy evening rain", "speed": { "ref": "corridorSpeed_rain_kmh" } },
-      "corridorSpeed_dry_kmh": { "value": 13.2, "src": "S1", "kind": "sourced", "note": "TomTom Bengaluru evening peak, 2025" },
-      "silkBoardPeakSpeed_kmh": { "value": 4.48, "src": "S6", "kind": "sourced", "note": "2017 CTSTP study, lowest in the city" },
-      "corridorSpeed_rain_kmh": { "value": 4.8, "src": "S2", "kind": "sourced", "note": "ORR after ~2 h of rain. One observed event." },
+      "corridorSpeed_dry_kmh": { "value": 13.2, "src": "S1", "kind": "sourced", "note": "TomTom Bengaluru evening peak, 2025", "how": "TomTom's 2025 Traffic Index (S1): Bengaluru's average evening-peak speed across the year. For context only; the rain scenario runs at 4.8 km/h." },
+      "silkBoardPeakSpeed_kmh": { "value": 4.48, "src": "S6", "kind": "sourced", "note": "2017 CTSTP study, lowest in the city", "how": "From a 2017 city transport study, via Wikipedia (S6): Silk Board's average peak-hour speed is 4.48 km/h, the lowest in Bengaluru. That is a 2017 figure, not a rain measurement. Shown as a cross-check on the 4.8 km/h rain speed." },
+      "corridorSpeed_rain_kmh": { "value": 4.8, "src": "S2", "kind": "sourced", "note": "ORR after ~2 h of rain. One observed event.", "how": "Reported by Deccan Herald on Bengaluru's Outer Ring Road after about two hours of evening rain (S2): traffic averaged 4.8 km/h with a 3.2 km queue. One observed evening." },
       "worstHourCongestion": { "value": 1.83, "src": "S1", "kind": "sourced", "note": "6 pm" },
-      "waterDepth_mm": { "value": 150, "kind": "assumption", "note": "puddled lane. Gives max safe speed 24.3 km/h via S9." },
+      "waterDepth_mm": { "value": 150, "kind": "assumption", "note": "puddled lane. Gives max safe speed 24.3 km/h via S9.", "how": "No depth was recorded for that evening. We assumed 150 mm, water pooled across a lane. That still leaves the road passable; the flood-speed formula treats 300 mm or more as impassable (S9)." },
       "signal_J1_SilkBoard": {
         "cycle_s": { "value": 285, "src": "S5", "kind": "sourced" },
         "green_s": { "BTM_Layout": 150, "HSR_Layout": 90, "Hosur_Road_each_side": 45, "src": "S5", "kind": "sourced" },
-        "volume_vehPerHr_total": { "value": 17816, "src": "S5", "kind": "sourced", "note": "9:30–10:30 am. Used as a proxy for evening." },
+        "volume_vehPerHr_total": { "value": 17816, "src": "S5", "kind": "sourced", "note": "9:30–10:30 am. Used as a proxy for evening.", "how": "Counted at Silk Board between 9:30 and 10:30 am and reported by Deccan Herald (S5). It is a morning count, used for the evening scene because no evening count was found." },
         "volume_vehPerHr_byArm": {
-          "BTM_Layout": { "value": 8300, "src": "S5", "kind": "sourced" },
-          "HSR_Layout": { "value": 4758, "kind": "derived", "note": "remaining 9,516 split by green share" },
-          "Hosur_N": { "value": 2379, "kind": "derived" },
-          "Hosur_S": { "value": 2379, "kind": "derived" }
+          "BTM_Layout": { "value": 8300, "src": "S5", "kind": "sourced", "how": "From the same Silk Board count (S5): 8,300 of the 17,816 vehicles an hour came from BTM Layout." },
+          "HSR_Layout": { "value": 4758, "kind": "derived", "note": "remaining 9,516 split by green share", "how": "The count (S5) gives only BTM's share. The other three roads carry 17,816 − 8,300 = 9,516 vehicles an hour, which we split by their green times, 90 : 45 : 45 s (S5). HSR gets 90 ÷ 180 of it: 9,516 × 0.5 = 4,758." },
+          "Hosur_N": { "value": 2379, "kind": "derived", "how": "Split as for HSR Layout: Hosur Road north gets 45 ÷ 180 of the 9,516 vehicles an hour left after BTM, 9,516 × 0.25 = 2,379." },
+          "Hosur_S": { "value": 2379, "kind": "derived", "how": "Split as for HSR Layout: Hosur Road south, the ambulance's road, gets 45 ÷ 180 of the 9,516 vehicles an hour left after BTM, 9,516 × 0.25 = 2,379." }
         }
       },
       "signal_J2": { "cycle_s": { "value": 150, "kind": "assumption" } },
       "vehicleMix": { "ref": "global.vehicleMix_bengaluru_registered", "kind": "proxy" },
-      "ambulanceBaseline_noSystem_kmh": { "value": 4.8, "src": "S2", "kind": "assumption", "note": "Siren only: stuck at the observed rain traffic speed (S2)." },
-      "ambulanceWithSystem_kmh": { "value": 24, "src": "S9", "kind": "derived", "note": "capped by the flood-depth safe speed at 150 mm" },
+      "ambulanceBaseline_noSystem_kmh": { "value": 4.8, "src": "S2", "kind": "assumption", "note": "Siren only: stuck at the observed rain traffic speed (S2).", "how": "Set equal to the traffic speed, 4.8 km/h. With only a siren, drivers ahead can't hear it in time (12 m into a car, S13) and most don't give way (S17), so we assume the ambulance moves no faster than the traffic around it." },
+      "ambulanceWithSystem_kmh": { "value": 24, "src": "S9", "kind": "derived", "note": "capped by the flood-depth safe speed at 150 mm", "how": "The safe driving speed through standing water, from a published flood-speed formula (Pregnolato et al., 2017, S9): speed = 0.0009 × depth² − 0.5529 × depth + 86.9448. With 150 mm of water: 20.25 − 82.94 + 86.94 = 24.3 km/h, used as 24. The 150 mm depth is our assumption." },
       "sim": {
         "trafficSpeed_kmh":            { "ref": "corridorSpeed_rain_kmh" },
         "ambulanceSpeed_noSystem_kmh":   { "ref": "ambulanceBaseline_noSystem_kmh" },
@@ -321,7 +321,7 @@
       },
       "geometry": {
         "_readme": "Arms are named by role relative to the ambulance: in (it arrives on this arm), out (it leaves on this arm), left, right. 'name' maps a role to a real arm where a source names it. Lane counts are inbound lanes; outbound assumed equal.",
-        "j1ToJ2_m": { "value": 405, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (404.5 m), replacing the 1000 m placeholder. Real map distance, but on the Indiranagar stand-in corridor (see geometry.osm.coverage), not Silk Board -> the next Hosur Road signal." },
+        "j1ToJ2_m": { "value": 405, "unit": "m", "src": "S20", "kind": "assumption", "note": "Measured in src/geo along geometry.osm.routeWay between the two junctions (404.5 m), replacing the 1000 m placeholder. Real map distance, but on the Indiranagar stand-in corridor (see geometry.osm.coverage), not Silk Board -> the next Hosur Road signal.", "how": "Measured along the OpenStreetMap road between the two junctions we drew: 404.5 m (S20). Those streets are a stand-in in Indiranagar, not the real stretch from Silk Board to the next signal, so it is marked as an assumption." },
         "osm": {
           "_readme": "Where src/geo puts the engine's straight route on the map. Way ids are from the export in /data/osm (S20). routeWay and opposingWay list the pieces of one carriageway in travel order.",
           "file": "bengaluru.geojson",
@@ -335,10 +335,10 @@
           "crossArms": { "value": "along the OSM road leaving the junction on that side, left of centre", "kind": "assumption", "note": "src/geo follows the cross road outward through the OSM road network (straightest way on at each node, skipping footways and service roads). Where the cross road meets the main road a little way along (a staggered junction), the arm jogs from the junction centre to it. Straight, at right angles to the route, only where no road is mapped. Each direction keeps to the left (India drives on the left); lane widths per global.crossArmDrawing." },
           "j1ToJ2Tolerance_m": { "value": 2, "unit": "m", "kind": "assumption", "note": "src/geo refuses to draw if the OSM J1 -> J2 length differs from j1ToJ2_m by more than this." }
         },
-        "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "Same lane width the Gurugram approachWidth note uses (3 x 3.5 m)." },
+        "laneWidth_m": { "value": 3.5, "unit": "m", "kind": "assumption", "note": "Same lane width the Gurugram approachWidth note uses (3 x 3.5 m).", "how": "A lane width of 3.5 m, the same one used in Gurugram. Not measured." },
         "lanesPerApproach": {
           "J1": {
-            "in":    { "name": "Hosur_S",    "value": 5, "unit": "lanes", "kind": "assumption", "note": "Smallest count that lets S5's 2,379 veh/h discharge in a 45 s green of a 285 s cycle under S11: 2379 x 0.606 PCU/veh x 285/45 = 9,137 PCU/h of green -> 17.4 m -> 5.0 lanes. 0.606 = registered mix (S7) x PCU (S10), with 'other' taken at the auto PCU. Read as effective lanes; traffic here is not lane-disciplined." },
+            "in":    { "name": "Hosur_S",    "value": 5, "unit": "lanes", "kind": "assumption", "note": "Smallest count that lets S5's 2,379 veh/h discharge in a 45 s green of a 285 s cycle under S11: 2379 x 0.606 PCU/veh x 285/45 = 9,137 PCU/h of green -> 17.4 m -> 5.0 lanes. 0.606 = registered mix (S7) x PCU (S10), with 'other' taken at the auto PCU. Read as effective lanes; traffic here is not lane-disciplined.", "how": "The fewest lanes that can carry Silk Board's measured traffic in its green time. Hosur Road south carries 2,379 vehicles an hour (S5). An average vehicle is 0.606 car units (68% two-wheelers × 0.46 + 20% cars × 1 + 12% others × 0.78, from S7 and S10). It gets 45 s of green in every 285 s (S5). So it needs 2,379 × 0.606 × 285 ÷ 45 = 9,137 car units per hour of green. At 525 per metre of width (S11) that is 17.4 m, or 5 lanes of 3.5 m. Read it as effective lanes; traffic here does not keep to lanes." },
             "out":   { "name": "Hosur_N",    "value": 5, "unit": "lanes", "kind": "assumption", "note": "Same check as Hosur_S (same volume and green)." },
             "left":  { "name": "BTM_Layout", "value": 5, "unit": "lanes", "kind": "assumption", "note": "Same check: 8300 x 0.606 x 285/150 = 9,563 PCU/h of green -> 18.2 m -> 5.2 lanes. Left/right side of BTM vs HSR (travelling north) to verify on Maps." },
             "right": { "name": "HSR_Layout", "value": 5, "unit": "lanes", "kind": "assumption", "note": "Same check: 4758 x 0.606 x 285/90 = 9,137 PCU/h of green -> 17.4 m -> 5.0 lanes." }
@@ -351,8 +351,8 @@
           }
         },
         "approachLengthOnScreen_m": {
-          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach (760 m, or 94.3 s of ETA at the ambulance's speed) so every run opens in NORMAL before J1 alerts." },
-          "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Enough to see the ambulance clear J2 and J2 return to NORMAL." },
+          "upstreamOfJ1":   { "value": 1000, "unit": "m", "kind": "assumption", "note": "Must exceed the trigger reach (760 m, or 94.3 s of ETA at the ambulance's speed) so every run opens in NORMAL before J1 alerts.", "how": "Chosen so the ambulance always starts before either trigger can fire: further out than 760 m, and further than 94.3 s at its top speed of 24 km/h (6.67 m/s × 94.3 s = 629 m)." },
+          "downstreamOfJ2": { "value": 300,  "unit": "m", "kind": "assumption", "note": "Enough to see the ambulance clear J2 and J2 return to NORMAL.", "how": "Chosen so you can see the ambulance clear the second junction and the junction go back to normal." },
           "crossArms":      { "value": 300,  "unit": "m", "kind": "assumption", "note": "Applies to left/right arms at both junctions. BTM red-phase queues may exceed this; the engine needs an off-screen queue store." }
         },
         "ambulanceEntry": {
@@ -394,8 +394,8 @@
   ],
 
   "scaling": {
-    "vehiclesPerSprite": { "value": 10, "kind": "assumption", "note": "Silk Board at 17,816 veh/h gives ~140 sprites per 285 s cycle" },
-    "timeCompression": { "value": 15, "kind": "assumption", "note": "one 285 s cycle ≈ 19 s on screen. Always show a 'real time' clock." },
+    "vehiclesPerSprite": { "value": 10, "kind": "assumption", "note": "Silk Board at 17,816 veh/h gives ~140 sprites per 285 s cycle", "how": "Chosen to keep the simulation fast enough for a browser. Silk Board moves 17,816 vehicles an hour (S5), about 1,410 per 285 s cycle; in groups of 10 that is about 140. Each group follows the same driving rules, spaced as 10 vehicles would be." },
+    "timeCompression": { "value": 15, "kind": "assumption", "note": "one 285 s cycle ≈ 19 s on screen. Always show a 'real time' clock.", "how": "Chosen so the scene is watchable: one 285 s Silk Board cycle plays in 285 ÷ 15 = 19 s. Only the clock runs faster; every speed is true, so a 4.8 km/h scene looks exactly 6 times slower than a 29 km/h one." },
     "spritePlatoon": {
       "_note": "1 sprite = vehiclesPerSprite vehicles of one type, drawn as a short platoon. The engine moves platoons with IDM at true scale, so the queue on screen is the queue the engine computes.",
       "packing": { "value": 0.4, "kind": "assumption", "note": "Platoon length = 10 x vehicle length x 0.4. Stands in for mixed traffic filling gaps sideways. The IDM jam gap s0 is packed the same way (10 x s0 x 0.4) so a standing queue is 10 x 0.4 x (length + s0) per sprite: 24.8 m for 10 cars, against 62 m single-file." },

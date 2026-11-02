@@ -46,6 +46,7 @@ export const explain = {
   legend: "A hollow circle marks a number that is a proxy (real data from a similar place) or an assumption (no public data found). Hover any number for its source.",
   step: "Where the ambulance is in its trip past the two junctions.",
   cityToggle: "Switch between the Gurugram and Bengaluru scenarios.",
+  sourcesToggle: "Every number this scenario uses, where it comes from, and which ones are assumptions. Keyboard: D.",
   modeToggle: "Automated plays the scenario on a loop (Space pauses). Scroll lets the scroll wheel move through time. Keyboard: Shift+Space.",
   navMap: "Overview of the whole route and both junctions.",
   navJunction: "Close-up of one junction: its signals, lanes and queues.",

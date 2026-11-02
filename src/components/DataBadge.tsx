@@ -9,6 +9,8 @@ export interface DataNode {
   src?: string;
   kind: "sourced" | "derived" | "proxy" | "assumption";
   note?: string;
+  /** Plain-English account of how the number was found or worked out (the Sources sheet shows it). */
+  how?: string;
 }
 
 export const KIND_TEXT: Record<DataNode["kind"], string> = {
@@ -41,7 +43,7 @@ export function DataBadge({ node, unit, digits = 1, explain }: {
       )}
       {source?.note && <div className="tip__note">{source.note}</div>}
       <div>{KIND_TEXT[node.kind]}</div>
-      {flagged && node.note && <div className="tip__note">{node.note}</div>}
+      {flagged && (node.how ?? node.note) && <div className="tip__note">{node.how ?? node.note}</div>}
     </>
   );
   return (

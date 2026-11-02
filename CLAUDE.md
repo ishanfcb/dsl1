@@ -56,7 +56,8 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
    - Junction pins carry their labels (§6). Traffic appears as small amber vehicles.
    - Beside the visual, in the shell: each junction's state and the GPS packet stream as small uppercase lines.
    - Below it: a 4-frame small-multiples row, one framed frame per phase. Caption: phase name left, real time right.
-   - One toggle in the shell: **Without / With system**. A city switch (Gurgaon / Bangalore) sits at the bottom right of the visual; a city is selectable once its OSM export is in `/data/osm`.
+   - One toggle in the shell: **Without / With system**. A city switch (Gurgaon / Bangalore) sits at the top of the panel, above the page nav; a city is selectable once its OSM export is in `/data/osm`.
+   - A **Sources** toggle (bottom right of the visual, above Automated / Scroll; key `D`) slides a tinted-glass sheet in from the right over the visual, the full height of the map, with the rest of the page dimmed. While it is open, time is held (even on Automated), only `D` and Esc work, focus stays in the sheet, and a click on the dimmed page closes it. It lists every number the scenario runs on, with its kind, source link and note, then every source and what was taken from it. Labels live in `src/components/sourceSheet.ts`; values come from scenarios.json.
 4. **Junction**: click a pin (or use the nav) and the camera eases down to that junction. It shows the 4 arms with lane lines, a signal head on each approach (R/A/G dots plus the blue light), and the real queues as clusters of amber vehicles building up and clearing.
 5. **Driver**: a camera at driver eye height behind one vehicle on the route. The blue light comes on early, the signal ahead turns green and the queue drains, the ambulance passes. The siren-only version plays alongside in a second frame, same seed and time.
 6. **System** (how it works): the 3 layers (§1) as a flat diagram in the shell style, with blue data packets moving between them.
@@ -64,10 +65,10 @@ Pages follow the nav in §6: **Scenarios / Map / Junction / Driver / System / Im
 
 ## 5. Interaction model
 
-- Two explicit modes, switched only by the **Automated / Scroll** toggle at the bottom left of the visual (or `Shift+Space`). Moving the mouse or touching the trackpad never changes mode.
+- Two explicit modes, switched only by the **Automated / Scroll** toggle at the bottom right of the visual (or `Shift+Space`). Moving the mouse or touching the trackpad never changes mode.
 - **Automated** (default) → the current scenario plays and loops. Space pauses and resumes.
 - **Scroll** → the scroll wheel scrubs timeline progress (smoothed with a spring). Space switches back to Automated.
-- Keyboard (for presenting): ← → move between pages, Space play/pause, Shift+Space Automated/Scroll, 1–4 pick a scenario, `S` toggles the system on/off.
+- Keyboard (for presenting): ← → move between pages, Space play/pause, Shift+Space Automated/Scroll, 1–4 pick a scenario, `S` toggles the system on/off, `D` opens the Sources sheet, Esc closes it.
 - Must work full-screen on a laptop and a projector (1920×1080 and 1280×720). Respect `prefers-reduced-motion`.
 
 ## 6. Visual language
@@ -81,7 +82,7 @@ If anything elsewhere in this file conflicts with this section on colour or styl
 - **Helvetica for everything** (self-hosted from `public/fonts`, gitignored because the font is licensed: Light 300, Regular 400, Bold 700, plus obliques; no medium cut, so 500 renders as 400). Hierarchy comes only from size, weight, case and letter-spacing: large light uppercase page title, small medium uppercase tracked section labels, regular body, tabular figures for data. Smooth antialiased text.
 - Soft rounded corners (20 px) on the panel and the visual. Values, chips, nav items and toggles are small pills; the active one is a light pill with dark text.
 - Left panel, top to bottom: the nav as one segmented row of the built pages (Map / Junction for now; no wordmark); page title; scenario facts as a small spec line (muted label above each value, not pills); a short story paragraph; then a few labelled sections. Keep it sparse: one chart for time saved (journey-time bars, Without vs With, on one scale), then signal states in words. Every value keeps its source id (`13.2 KM/H · S1`) and assumption marker (§2). The panel scrolls inside itself if it runs long.
-- All other text and data live in the panel. The visual carries only: junction pins, the distance from the ambulance to the next junction (a red dimension line beside the route with the number on the ground), a small frosted-glass narration card top right (what is happening now, two plain lines, from engine state), the city switch and the OSM credit.
+- All other text and data live in the panel. The visual carries only: junction pins, the distance from the ambulance to the next junction (a red dimension line beside the route with the number on the ground), a small frosted-glass narration card top right (what is happening now, two plain lines, from engine state), the Sources and Automated / Scroll toggles (bottom right), the Sources sheet when open, and the OSM credit.
 - Hover notes: resting the pointer on any value or control for 2 s shows a small frosted box with one plain sentence on what it is; numbers also name their source (read from DATA_SOURCES.md) and their kind. Wording lives in `src/components/explanations.ts`.
 - No shadows, no gradients, no emoji.
 

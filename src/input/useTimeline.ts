@@ -15,6 +15,9 @@ export interface TimelineOptions {
   initial?: number;
   /** When this changes (a new city), jump back to `start` instead of keeping the moment. */
   resetKey?: unknown;
+  /** While true, time stands still and the wheel does nothing (e.g. the Sources sheet is open). Mode and play
+   *  state are kept, so playback carries on as before once it is false again. */
+  hold?: boolean;
 }
 
 export type TimelineMode = "auto" | "scroll";
@@ -35,7 +38,7 @@ export interface Timeline {
   togglePlay(): void;
 }
 
-export function useTimeline({ start, end, compression, reducedMotion, initial, resetKey }: TimelineOptions): Timeline {
+export function useTimeline({ start, end, compression, reducedMotion, initial, resetKey, hold = false }: TimelineOptions): Timeline {
   const target = useMotionValue(initial ?? start);
   const spring = useSpring(target, { stiffness: 140, damping: 32, restDelta: 0.001 });
   const time = reducedMotion ? target : spring;
@@ -45,6 +48,8 @@ export function useTimeline({ start, end, compression, reducedMotion, initial, r
   const playingRef = useRef(true);
   const range = useRef({ start, end });
   range.current = { start, end };
+  const holdRef = useRef(hold);
+  holdRef.current = hold;
 
   const setPlay = (p: boolean) => {
     playingRef.current = p;
@@ -72,7 +77,7 @@ export function useTimeline({ start, end, compression, reducedMotion, initial, r
   useEffect(() => {
     const clamp = (t: number) => Math.min(range.current.end, Math.max(range.current.start, t));
     const onWheel = (e: WheelEvent) => {
-      if (modeRef.current !== "scroll") return;
+      if (modeRef.current !== "scroll" || holdRef.current) return;
       const { start: s, end: en } = range.current;
       target.set(clamp(target.get() + (e.deltaY / WHEEL_PX_FOR_RANGE) * (en - s)));
     };
@@ -84,7 +89,7 @@ export function useTimeline({ start, end, compression, reducedMotion, initial, r
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      if (playingRef.current) {
+      if (playingRef.current && !holdRef.current) {
         const { start: s, end: en } = range.current;
         const t = target.get();
         if (t >= en) {

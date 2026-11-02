@@ -1,4 +1,4 @@
-// Bottom-right switch between the corridors. A city without its OSM export cannot be picked; one still being
+// Switch between the corridors, at the top of the left panel. A city without its OSM export cannot be picked; one still being
 // prepared in the background (engine runs, buildings) shows as preparing and becomes selectable when done.
 import { useEffect } from "react";
 import { useExplain } from "../components/Explain";

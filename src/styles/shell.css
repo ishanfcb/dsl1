@@ -70,6 +70,9 @@ body {
 }
 
 .masthead {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
   padding: var(--pad) var(--pad) 0;
 }
 /* The pages as one segmented row: a single track, the active page a light pill. */
@@ -430,8 +433,7 @@ body {
 .frame__credit {
   position: absolute;
   left: 18px;
-  /* Sits above the Automated / Scroll switch. */
-  bottom: 60px;
+  bottom: 14px;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -500,18 +502,229 @@ body {
   font-size: 15px;
 }
 
-/* ---- city switch, bottom right of the visual ---- */
-.city-toggle {
+/* ---- Sources sheet: tinted glass over the right of the page, the full height of the map. The rest of the
+   page is dimmed behind it and takes no input while it is open. ---- */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(5, 5, 6, 0.5);
+}
+.sheet {
+  /* Its own type floor: the sheet is read, not glanced at, so it never drops to the panel's smallest sizes. */
+  --sheet-m: clamp(15px, 0.94vw, 18px);
+  --sheet-s: clamp(13.5px, 0.8vw, 15px);
+  --sheet-xs: clamp(11.5px, 0.66vw, 13px);
+  position: fixed;
+  top: var(--gap);
+  right: var(--gap);
+  bottom: var(--gap);
+  z-index: 61;
+  width: clamp(580px, 42vw, 800px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  background: rgba(30, 33, 40, 0.5);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  backdrop-filter: blur(32px) saturate(160%);
+  overflow: hidden;
+  will-change: transform;
+}
+.sheet__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: var(--pad) var(--pad) 20px;
+  border-bottom: 1px solid var(--line);
+}
+.sheet__eyebrow {
+  margin: 0 0 10px;
+  font-size: var(--sheet-xs);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sheet__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+}
+.sheet__close {
+  all: unset;
+  cursor: pointer;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  transition: background-color 0.2s;
+}
+.sheet__close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.sheet__close:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+}
+.sheet__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px var(--pad) var(--pad);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+.sheet__lede {
+  margin: 0 0 18px;
+  font-size: var(--sheet-m);
+  line-height: 1.5;
+  color: rgba(237, 237, 237, 0.78);
+  max-width: 58ch;
+}
+/* The kinds on one line, always. */
+.sheet__filter {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.07);
+}
+.sheet__filter button {
+  padding: 6px 12px 7px;
+  font-size: var(--sheet-xs);
+}
+.sheet__count {
+  margin-left: 0.4em;
+  opacity: 0.6;
+}
+.sheet__group {
+  padding-top: 32px;
+}
+.sheet__heading {
+  margin: 0 0 4px;
+  font-size: var(--sheet-s);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sheet__item {
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.sheet__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  font-size: var(--sheet-m);
+  line-height: 1.35;
+}
+.sheet__label {
+  color: var(--text);
+}
+.sheet__value {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 8px;
+  font-size: var(--sheet-s);
+  color: var(--muted);
+}
+.sheet__meta a,
+.sheet__source a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: rgba(237, 237, 237, 0.35);
+  text-underline-offset: 3px;
+}
+.sheet__meta a:hover,
+.sheet__source a:hover {
+  text-decoration-color: currentColor;
+}
+.sheet__kind {
+  padding: 2px 9px 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: var(--sheet-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(237, 237, 237, 0.82);
+}
+/* Proxy and assumption carry the same hollow dot as everywhere else on the site. */
+.sheet__kind--proxy::before,
+.sheet__kind--assumption::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  vertical-align: -0.02em;
+}
+.sheet__note,
+.sheet__what {
+  margin: 8px 0 0;
+  font-size: var(--sheet-s);
+  line-height: 1.55;
+  color: rgba(237, 237, 237, 0.66);
+  max-width: 62ch;
+}
+.sheet__what {
+  color: rgba(237, 237, 237, 0.82);
+}
+/* How a number was found or worked out: the main text of each row, so it reads brighter than a note. */
+.sheet__how {
+  margin: 10px 0 0;
+  font-size: var(--sheet-s);
+  line-height: 1.6;
+  color: rgba(237, 237, 237, 0.84);
+  max-width: 64ch;
+}
+.sheet__source {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: var(--sheet-m);
+}
+.sheet__id {
+  flex: none;
+  min-width: 2.4em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* ---- bottom right of the visual: the Sources switch above the Automated / Scroll switch ---- */
+.stage-controls {
   position: absolute;
   right: 16px;
   bottom: 14px;
-  background: rgba(19, 20, 23, 0.82);
+  display: grid;
+  justify-items: end;
+  gap: 8px;
 }
-/* ---- Automated / Scroll switch, bottom left of the visual ---- */
-.mode-toggle {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
+.stage-controls .toggle {
   background: rgba(19, 20, 23, 0.82);
 }
 .toggle button:disabled {

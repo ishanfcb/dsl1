@@ -21,6 +21,8 @@ import { JunctionSide, JunctionStory } from "./JunctionView";
 import { MapSide, MapStory } from "./MapView";
 import { CityToggle } from "./CityToggle";
 import { ModeToggle } from "./ModeToggle";
+import { SourcesSheet } from "./SourcesSheet";
+import { SourcesToggle } from "./SourcesToggle";
 import { useScenario } from "./useScenario";
 
 /** Real seconds shown before the ambulance enters, so the view opens on moving traffic. */
@@ -42,6 +44,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
   const sc = useScenario(scenario);
   const reducedMotion = useReducedMotion() ?? false;
   const [system, setSystem] = useState(true);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const sim = system ? sc.runs.withSystem : sc.runs.without;
   const entered = sim.result.ambulance.enteredAt ?? 0;
   const focus: JunctionId | null = route.page === "junction" ? route.junction : null;
@@ -53,18 +56,23 @@ export function CorridorPage({ route, scenario, onScenario }: {
     reducedMotion,
     initial: openAt === null ? undefined : entered + openAt,
     resetKey: scenario,
+    hold: sourcesOpen,
   });
+  // While the Sources sheet is open it has all the attention: only D and Esc (to close it) do anything.
+  const behind = <T,>(fn: T) => (sourcesOpen ? undefined : fn);
   useKeyboard({
-    onPlayPause: timeline.togglePlay,
-    onToggleMode: timeline.toggleMode,
-    onToggleSystem: () => setSystem((s) => !s),
-    onPage: (step) => {
+    onPlayPause: behind(timeline.togglePlay),
+    onToggleMode: behind(timeline.toggleMode),
+    onToggleSystem: behind(() => setSystem((s) => !s)),
+    onToggleSources: () => setSourcesOpen((o) => !o),
+    onPage: behind((step: -1 | 1) => {
       const i = ORDER.findIndex((r) => r.page === route.page);
       const next = ORDER[i + step];
       if (next) window.location.hash = hrefOf(next);
-    },
+    }),
     onBack: () => {
-      if (focus) window.location.hash = hrefOf({ page: "map" });
+      if (sourcesOpen) setSourcesOpen(false);
+      else if (focus) window.location.hash = hrefOf({ page: "map" });
     },
   });
 
@@ -81,7 +89,7 @@ export function CorridorPage({ route, scenario, onScenario }: {
   return (
     <div className="page">
       <aside className="panel">
-        <Masthead active={focus ? "Junction" : "Map"} />
+        <Masthead active={focus ? "Junction" : "Map"} city={<CityToggle current={scenario} onChange={onScenario} />} />
 
         <div className="panel__body">
           <header className="intro">
@@ -150,8 +158,11 @@ export function CorridorPage({ route, scenario, onScenario }: {
         <Frame credit="© OpenStreetMap contributors">
           <CityScene data={sceneData} junctionNames={sc.names} focus={focus} />
           <Narration sc={sc} sim={sim} state={state} reducedMotion={reducedMotion} />
-          <ModeToggle mode={timeline.mode} playing={timeline.playing} onChange={timeline.setMode} />
-          <CityToggle current={scenario} onChange={onScenario} />
+          <div className="stage-controls">
+            <SourcesToggle open={sourcesOpen} onChange={setSourcesOpen} />
+            <ModeToggle mode={timeline.mode} playing={timeline.playing} onChange={timeline.setMode} />
+          </div>
+          <SourcesSheet open={sourcesOpen} onClose={() => setSourcesOpen(false)} scenarioId={scenario} place={`${sc.place} · ${sc.dayTime}`} reducedMotion={reducedMotion} />
         </Frame>
       </main>
       <ExplainLayer />
